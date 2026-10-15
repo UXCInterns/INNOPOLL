@@ -1,0 +1,177 @@
+
+<!-- FILE: facilitator/facilitator.html -->
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Innopoll | Facilitator Dashboard</title>
+
+  <link rel="stylesheet" href="./styles.css" />
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+  <script src="./config.js"></script>
+  <script src="./facilitator.js" defer></script>
+</head>
+<body class="dashboard-body">
+  <header class="dashboard-header">
+    <a href="#" class="brand-header">
+      <span class="brand-mark">I</span>
+      <span>Innopoll</span>
+    </a>
+    <div class="header-actions">
+      <span id="signed-in-label" class="muted small-text"></span>
+      <button id="sign-out-button" class="secondary-button hidden">
+        Sign out
+      </button>
+    </div>
+  </header>
+
+  <main class="dashboard-container">
+    <section id="login-panel" class="survey-card login-card">
+      <p class="eyebrow">FACILITATOR ACCESS</p>
+      <h1>Welcome back</h1>
+      <p class="muted">Sign in to manage your Innopoll sessions.</p>
+
+      <form id="login-form" class="stack-form">
+        <label for="login-email">Email address</label>
+        <input id="login-email" type="email" autocomplete="username" required />
+
+        <label for="login-password">Password</label>
+        <input id="login-password" type="password"
+          autocomplete="current-password" required />
+
+        <p id="login-error" class="error-message" role="alert"></p>
+        <button type="submit" id="login-button" class="primary-button">
+          Sign in
+        </button>
+      </form>
+    </section>
+
+    <section id="dashboard-panel" class="hidden">
+      <div class="dashboard-intro">
+        <div>
+          <p class="eyebrow">FACILITATOR WORKSPACE</p>
+          <h1>Survey sessions</h1>
+          <p class="muted">
+            Create a session for each organisation or workshop.
+          </p>
+        </div>
+      </div>
+
+      <section class="survey-card">
+        <h2>Create a new session</h2>
+        <form id="create-session-form" class="stack-form">
+          <label for="organisation-name">Organisation</label>
+          <input id="organisation-name" type="text"
+            placeholder="e.g. Example Organisation" maxlength="120" required />
+
+          <label for="session-name">Workshop or session name</label>
+          <input id="session-name" type="text"
+            placeholder="e.g. Innovation Workshop — October" maxlength="120" required />
+
+          <p id="create-error" class="error-message" role="alert"></p>
+          <button type="submit" id="create-button" class="primary-button">
+            Create session
+          </button>
+        </form>
+      </section>
+
+      <section class="sessions-section">
+        <div class="section-heading">
+          <h2>Your sessions</h2>
+          <button id="refresh-button" class="secondary-button">
+            Refresh
+          </button>
+        </div>
+        <p id="sessions-message" class="muted small-text"></p>
+        <div id="sessions-list" class="sessions-list"></div>
+      </section>
+
+      <section id="session-detail" class="survey-card hidden">
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">SESSION RESULTS</p>
+            <h2 id="detail-session-title">Session</h2>
+            <p id="detail-session-subtitle" class="muted"></p>
+          </div>
+          <button id="close-detail-button" class="secondary-button">
+            Back
+          </button>
+        </div>
+
+        <div class="session-tools">
+          <div class="qr-panel">
+            <h3>Participant QR code</h3>
+            <p class="muted small-text">
+              Participants can scan this code to open the survey.
+            </p>
+            <div id="qr-code" class="qr-code"></div>
+            <p id="participant-url" class="url-text"></p>
+            <button id="copy-link-button" class="secondary-button full-width">
+              Copy survey link
+            </button>
+            <button id="download-qr-button" class="secondary-button full-width">
+              Download QR code
+            </button>
+          </div>
+
+          <div class="response-summary">
+            <p class="muted small-text">Responses received</p>
+            <p id="response-count" class="response-count">0</p>
+            <p class="muted small-text">
+              Results update when new responses are submitted.
+            </p>
+          </div>
+        </div>
+
+        <div class="results-grid">
+          <article class="chart-card">
+            <h3>Culture</h3>
+            <p class="muted small-text">Innovation culture score</p>
+            <div class="chart-wrap">
+              <canvas id="culture-chart"></canvas>
+            </div>
+            <p id="culture-score" class="chart-score">— / 100</p>
+            <button class="secondary-button export-chart"
+              data-chart="culture" type="button">Export chart</button>
+          </article>
+
+          <article class="chart-card">
+            <h3>Practices</h3>
+            <p class="muted small-text">Innovation practices score</p>
+            <div class="chart-wrap">
+              <canvas id="practices-chart"></canvas>
+            </div>
+            <p id="practices-score" class="chart-score">— / 100</p>
+            <button class="secondary-button export-chart"
+              data-chart="practices" type="button">Export chart</button>
+          </article>
+
+          <article class="chart-card">
+            <h3>Leadership</h3>
+            <p class="muted small-text">Innovation leadership score</p>
+            <div class="chart-wrap">
+              <canvas id="leadership-chart"></canvas>
+            </div>
+            <p id="leadership-score" class="chart-score">— / 100</p>
+            <button class="secondary-button export-chart"
+              data-chart="leadership" type="button">Export chart</button>
+          </article>
+        </div>
+
+        <p id="results-message" class="muted small-text" aria-live="polite"></p>
+        <button id="export-all-button" class="primary-button">
+          Export all charts as images
+        </button>
+        <button id="toggle-session-button" class="secondary-button">
+          Close session
+        </button>
+      </section>
+    </section>
+  </main>
+</body>
+</html>
