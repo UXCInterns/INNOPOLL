@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f6f7fb">
+  <title>UXC | Innovation Readiness Poll</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="app-shell">
+    <header class="topbar">
+      <a class="brand" href="?view=survey" aria-label="UXC poll home">
+        <span class="brand-mark">UXC</span>
+        <span class="brand-copy"><strong>Innovation Readiness</strong><small>Learning Journey Poll</small></span>
+      </a>
+      <div class="topbar-right">
+        <span class="live-indicator"><span></span> Live prototype</span>
+        <a class="text-link" id="view-switch" href="?view=results">Facilitator results ↗</a>
+      </div>
+    </header>
+
+    <main id="app" class="main-content">
+      <div class="loading-state">Loading poll…</div>
+    </main>
+
+    <footer class="footer">
+      <span>UXC · Innovation Readiness Poll</span>
+      <span>Prototype · Responses are stored in this browser</span>
+    </footer>
+  </div>
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+  <script src="app.js"></script>
+</body>
+</html>
