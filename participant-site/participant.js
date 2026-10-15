@@ -1,5 +1,5 @@
 
-/* FILE: participant/participant.js */
+/* FILE: participant-site/participant.js */
 
 const { createClient } = window.supabase;
 const config = window.INNOPOLL_CONFIG;
@@ -49,34 +49,59 @@ const answers = {};
 let sessionId = null;
 
 const welcomeScreen = document.getElementById("welcome-screen");
+const descriptionScreen = document.getElementById(
+  "category-description-screen"
+);
 const questionScreen = document.getElementById("question-screen");
 const successScreen = document.getElementById("success-screen");
+const resultsScreen = document.getElementById("results-screen");
+
+const allScreens = [
+  welcomeScreen,
+  descriptionScreen,
+  questionScreen,
+  successScreen,
+  resultsScreen
+];
 
 function showScreen(screen) {
-  [welcomeScreen, questionScreen, successScreen].forEach((item) => {
-    item.classList.add("hidden");
-  });
+  allScreens.forEach((item) => item.classList.add("hidden"));
   screen.classList.remove("hidden");
+  window.scrollTo({ top: 0, behavior: "smooth" });
 }
 
 function getSessionIdFromUrl() {
   return new URLSearchParams(window.location.search).get("session");
 }
 
+function renderCategoryDescription() {
+  const item = questions[currentQuestion];
+
+  document.getElementById("category-description-title").textContent =
+    item.title;
+
+  document.getElementById("category-description-text").textContent =
+    item.description;
+
+  document.getElementById("description-next-button").textContent =
+    "Continue to question";
+}
+
 function renderQuestion() {
   const item = questions[currentQuestion];
 
-  document.getElementById("category-label").textContent =
-    item.title.toUpperCase();
   document.getElementById("progress-label").textContent =
     `${currentQuestion + 1} of ${questions.length}`;
+
   document.getElementById("progress-fill").style.width =
     `${((currentQuestion + 1) / questions.length) * 100}%`;
 
-  document.getElementById("question-title").textContent = item.title;
-  document.getElementById("category-description").textContent =
-    item.description;
   document.getElementById("question-text").textContent = item.question;
+  document.getElementById("question-definition").textContent =
+    item.description;
+
+  // Keep the definition closed when each question first appears.
+  document.querySelector(".definition-dropdown").open = false;
 
   const optionsContainer = document.getElementById("answer-options");
   optionsContainer.replaceChildren();
@@ -100,41 +125,77 @@ function renderQuestion() {
   });
 
   document.getElementById("answer-error").textContent = "";
-  document.getElementById("next-button").textContent =
-    currentQuestion === questions.length - 1
-      ? "Submit response"
-      : "Next";
+
+  const nextButton = document.getElementById("next-button");
+  const isLastQuestion = currentQuestion === questions.length - 1;
+
+  nextButton.textContent = isLastQuestion
+    ? "Submit response"
+    : "Next";
+
+  nextButton.classList.toggle("submit-button", isLastQuestion);
 }
 
 document.getElementById("join-button").addEventListener("click", async () => {
   const error = document.getElementById("welcome-error");
-  error.textContent = "";
+  const button = document.getElementById("join-button");
 
+  error.textContent = "";
   sessionId = getSessionIdFromUrl();
 
+  // A valid session is still required for a real submitted response.
   if (!sessionId) {
     error.textContent =
       "Please open the survey using the QR code or link provided by your facilitator.";
     return;
   }
 
-  const { data, error: sessionError } = await supabaseClient
-    .from("sessions")
-    .select("id, is_active")
-    .eq("id", sessionId)
-    .eq("is_active", true)
-    .maybeSingle();
+  button.disabled = true;
+  button.textContent = "Checking survey...";
 
-  if (sessionError || !data) {
+  try {
+    const { data, error: sessionError } = await supabaseClient
+      .from("sessions")
+      .select("id, is_active")
+      .eq("id", sessionId)
+      .eq("is_active", true)
+      .maybeSingle();
+
+    if (sessionError) {
+      console.error("Session lookup failed:", sessionError);
+      error.textContent =
+        "We couldn't check this survey session. Please try again.";
+      return;
+    }
+
+    if (!data) {
+      error.textContent =
+        "This survey session is unavailable or has been closed. Please check with your facilitator.";
+      return;
+    }
+
+    currentQuestion = 0;
+
+    Object.keys(answers).forEach((key) => delete answers[key]);
+
+    renderCategoryDescription();
+    showScreen(descriptionScreen);
+  } catch (err) {
+    console.error("Unable to join survey:", err);
     error.textContent =
-      "This survey session is unavailable or has been closed. Please check with your facilitator.";
-    return;
+      "Something went wrong while opening the survey. Please try again.";
+  } finally {
+    button.disabled = false;
+    button.textContent = "Join Survey";
   }
-
-  currentQuestion = 0;
-  showScreen(questionScreen);
-  renderQuestion();
 });
+
+document
+  .getElementById("description-next-button")
+  .addEventListener("click", () => {
+    renderQuestion();
+    showScreen(questionScreen);
+  });
 
 document.getElementById("answer-form").addEventListener("submit", async (event) => {
   event.preventDefault();
@@ -152,32 +213,101 @@ document.getElementById("answer-form").addEventListener("submit", async (event) 
 
   if (currentQuestion < questions.length - 1) {
     currentQuestion += 1;
-    renderQuestion();
+    renderCategoryDescription();
+    showScreen(descriptionScreen);
     return;
   }
 
   const button = document.getElementById("next-button");
   button.disabled = true;
-  button.textContent = "Submitting…";
+  button.textContent = "Submitting...";
   error.textContent = "";
 
-  const { error: submitError } = await supabaseClient
-    .from("responses")
-    .insert({
-      session_id: sessionId,
-      culture_score: answers.culture,
-      practices_score: answers.practices,
-      leadership_score: answers.leadership
-    });
+  try {
+    const { error: submitError } = await supabaseClient
+      .from("responses")
+      .insert({
+        session_id: sessionId,
+        culture_score: answers.culture,
+        practices_score: answers.practices,
+        leadership_score: answers.leadership
+      });
 
-  button.disabled = false;
-  button.textContent = "Submit response";
+    if (submitError) {
+      console.error("Response submission failed:", submitError);
+      error.textContent =
+        "We couldn't submit your response. Please check your connection and try again.";
+      return;
+    }
 
-  if (submitError) {
+    showScreen(successScreen);
+  } catch (err) {
+    console.error("Unexpected submission error:", err);
     error.textContent =
-      "We couldn't submit your response. Please check your connection and try again.";
-    return;
+      "Something went wrong while submitting. Please try again.";
+  } finally {
+    button.disabled = false;
+    button.textContent = "Submit response";
   }
-
-  showScreen(successScreen);
 });
+
+function renderPersonalResults() {
+  const resultsContainer = document.getElementById("results-content");
+  resultsContainer.replaceChildren();
+
+  const scores = questions.map((item) => ({
+    title: item.title,
+    score: answers[item.key]
+  }));
+
+  const total = scores.reduce((sum, item) => sum + item.score, 0);
+  const average = total / scores.length;
+
+  document.getElementById("average-score").textContent =
+    average.toFixed(1);
+
+  scores.forEach((item) => {
+    const resultCard = document.createElement("div");
+    resultCard.className = "personal-result-item";
+
+    const heading = document.createElement("div");
+    heading.className = "personal-result-heading";
+
+    const title = document.createElement("span");
+    title.textContent = item.title;
+
+    const score = document.createElement("strong");
+    score.textContent = `${item.score} / 5`;
+
+    heading.append(title, score);
+
+    const track = document.createElement("div");
+    track.className = "personal-result-track";
+    track.setAttribute("role", "progressbar");
+    track.setAttribute("aria-label", `${item.title} score`);
+    track.setAttribute("aria-valuemin", "1");
+    track.setAttribute("aria-valuemax", "5");
+    track.setAttribute("aria-valuenow", String(item.score));
+
+    const fill = document.createElement("div");
+    fill.className = "personal-result-fill";
+    fill.style.width = `${(item.score / 5) * 100}%`;
+
+    track.appendChild(fill);
+    resultCard.append(heading, track);
+    resultsContainer.appendChild(resultCard);
+  });
+}
+
+document
+  .getElementById("view-results-button")
+  .addEventListener("click", () => {
+    renderPersonalResults();
+    showScreen(resultsScreen);
+  });
+
+document
+  .getElementById("back-to-thank-you-button")
+  .addEventListener("click", () => {
+    showScreen(successScreen);
+  });
