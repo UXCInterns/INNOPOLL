@@ -290,7 +290,7 @@ h3 {
 
 .success-message {
   font-size: 1.05rem;
-  font-weight: 650;
+  font-weight: 400;
 }
 
 /* Facilitator dashboard */
@@ -542,11 +542,14 @@ h3 {
   }
 
   .participant-container {
-    justify-content: flex-start;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
     padding: 22px 14px;
   }
 
   .participant-container .survey-card {
+    width: 100%;
     padding: 22px 18px;
   }
 
@@ -581,38 +584,41 @@ h3 {
   }
 }
 
+/* Latest participant UI refinements */
+
+/* Distinctive uppercase display titles */
+.display-title,
 .category-title {
-  margin-bottom: 16px;
-  font-size: clamp(1.6rem, 3.5vw, 2rem);
-  line-height: 1.25;
-  letter-spacing: -0.035em;
+  font-family: "Arial Narrow", "Roboto Condensed", "Aptos Display",
+    sans-serif;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.045em;
+  line-height: 1.2;
 }
 
-/* Dedicated category introduction page */
-.category-intro-text {
-  margin: 0 0 28px;
-  color: var(--muted);
-  font-size: 1rem;
-  line-height: 1.85;
+.display-title {
+  font-size: clamp(1.65rem, 3.5vw, 2rem);
 }
 
-/* Question page */
-.question-topline {
-  justify-content: flex-end;
+.category-title {
+  font-size: clamp(1.45rem, 3vw, 1.8rem);
 }
 
-.question-text {
-  margin: 0 0 18px;
-  font-size: 1.12rem;
-  line-height: 1.6;
+/* Small wordmark beside the progress count */
+.poll-wordmark {
+  color: var(--ink);
+  font-size: 0.85rem;
+  font-weight: 800;
+  letter-spacing: 0.07em;
 }
 
-/* Collapsible definition */
+/* Slightly darker definition dropdown */
 .definition-dropdown {
   margin: 0 0 24px;
-  border: 1px solid var(--line);
+  border: 1px solid #d1d7df;
   border-radius: 10px;
-  background: #fafbfc;
+  background: #f1f3f6;
 }
 
 .definition-dropdown summary {
@@ -622,7 +628,7 @@ h3 {
   justify-content: space-between;
   gap: 12px;
   padding: 11px 14px;
-  color: #87909d;
+  color: #626c79;
   font-size: 0.85rem;
   cursor: pointer;
   list-style: none;
@@ -653,7 +659,7 @@ h3 {
 .definition-text {
   margin: 0;
   padding: 0 14px 15px;
-  color: #89919c;
+  color: #626c79;
   font-size: 0.85rem;
   line-height: 1.75;
 }
@@ -684,10 +690,6 @@ h3 {
 }
 
 /* Individual results */
-.results-intro {
-  margin-bottom: 22px;
-}
-
 .average-score-card {
   margin: 22px 0 28px;
   padding: 22px;
@@ -704,10 +706,11 @@ h3 {
 .average-score {
   margin: 4px 0;
   color: var(--ink);
-  font-size: 2.8rem;
+  font-size: clamp(2rem, 6vw, 2.6rem);
   font-weight: 750;
   line-height: 1.2;
   letter-spacing: -0.05em;
+  white-space: nowrap;
 }
 
 .personal-results {
@@ -745,12 +748,6 @@ h3 {
   border-radius: inherit;
   background: #18794e;
   transition: width 0.3s ease;
-}
-
-.results-note {
-  margin: 24px 0;
-  font-size: 0.8rem;
-  line-height: 1.7;
 }
 
 @media (max-width: 480px) {

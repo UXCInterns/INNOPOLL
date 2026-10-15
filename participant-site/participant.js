@@ -1,5 +1,5 @@
 
-/* FILE: participant-site/participant.js */
+/* FILE: participant.js */
 
 const { createClient } = window.supabase;
 const config = window.INNOPOLL_CONFIG;
@@ -12,7 +12,7 @@ const supabaseClient = createClient(
 const questions = [
   {
     key: "culture",
-    title: "Culture",
+    title: "Innovation Culture",
     description:
       "An Innovation Culture fosters an atmosphere where employees feel empowered to take risks, collaborate, and continuously seek out opportunities for improvement and innovation in products, processes, or services. This is essential to staying competitive in today's rapidly changing landscape.",
     question:
@@ -20,7 +20,7 @@ const questions = [
   },
   {
     key: "practices",
-    title: "Practices",
+    title: "Innovation Practices",
     description:
       "Innovation Practices often involve fostering a culture of innovation, conducting research and development, leveraging on technology and tools and processes for collaboration to thrive in an ever changing environmental and economic uncertainty to achieve sustainable advancements for all users.",
     question:
@@ -28,7 +28,7 @@ const questions = [
   },
   {
     key: "leadership",
-    title: "Leadership",
+    title: "Innovation Leadership",
     description:
       "Innovation leadership inspires organisations to foster a creative culture. They do not only champion and support creative thinking but also provide strategic direction, allocate resources, and create an environment where experimentation and calculated risk-taking are encouraged.",
     question:
@@ -39,7 +39,7 @@ const questions = [
 const scale = [
   { value: 5, label: "Strongly agree" },
   { value: 4, label: "Agree" },
-  { value: 3, label: "Neither agree nor disagree" },
+  { value: 3, label: "Neutral" },
   { value: 2, label: "Disagree" },
   { value: 1, label: "Strongly disagree" }
 ];
@@ -82,9 +82,6 @@ function renderCategoryDescription() {
 
   document.getElementById("category-description-text").textContent =
     item.description;
-
-  document.getElementById("description-next-button").textContent =
-    "Continue to question";
 }
 
 function renderQuestion() {
@@ -100,7 +97,6 @@ function renderQuestion() {
   document.getElementById("question-definition").textContent =
     item.description;
 
-  // Keep the definition closed when each question first appears.
   document.querySelector(".definition-dropdown").open = false;
 
   const optionsContainer = document.getElementById("answer-options");
@@ -143,7 +139,6 @@ document.getElementById("join-button").addEventListener("click", async () => {
   error.textContent = "";
   sessionId = getSessionIdFromUrl();
 
-  // A valid session is still required for a real submitted response.
   if (!sessionId) {
     error.textContent =
       "Please open the survey using the QR code or link provided by your facilitator.";
@@ -175,7 +170,6 @@ document.getElementById("join-button").addEventListener("click", async () => {
     }
 
     currentQuestion = 0;
-
     Object.keys(answers).forEach((key) => delete answers[key]);
 
     renderCategoryDescription();
@@ -264,7 +258,7 @@ function renderPersonalResults() {
   const average = total / scores.length;
 
   document.getElementById("average-score").textContent =
-    average.toFixed(1);
+    `${average.toFixed(1)} / 5`;
 
   scores.forEach((item) => {
     const resultCard = document.createElement("div");
@@ -304,10 +298,4 @@ document
   .addEventListener("click", () => {
     renderPersonalResults();
     showScreen(resultsScreen);
-  });
-
-document
-  .getElementById("back-to-thank-you-button")
-  .addEventListener("click", () => {
-    showScreen(successScreen);
   });

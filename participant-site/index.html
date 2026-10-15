@@ -16,10 +16,9 @@
 <body class="participant-body">
   <main class="participant-container">
 
-    <!-- Welcome -->
     <section id="welcome-screen" class="survey-card">
       <p class="eyebrow">INNOVATION READINESS POLL</p>
-      <h1>Innopoll</h1>
+      <h1 class="display-title">INNOPOLL</h1>
 
       <p class="muted">
         Share your perspective on innovation in your organisation.
@@ -33,11 +32,11 @@
       <p id="welcome-error" class="error-message" role="alert"></p>
     </section>
 
-    <!-- Category description: one page per category -->
     <section id="category-description-screen" class="survey-card hidden">
       <p class="eyebrow">CATEGORY INTRODUCTION</p>
+
       <h1 id="category-description-title" class="category-title">
-        Culture
+        INNOVATION CULTURE
       </h1>
 
       <p id="category-description-text" class="category-intro-text"></p>
@@ -51,9 +50,9 @@
       </button>
     </section>
 
-    <!-- Question -->
     <section id="question-screen" class="survey-card hidden">
       <div class="question-topline">
+        <span class="poll-wordmark">INNOPOLL</span>
         <span id="progress-label" class="muted small-text">1 of 3</span>
       </div>
 
@@ -86,19 +85,13 @@
       </form>
     </section>
 
-    <!-- Thank you -->
     <section id="success-screen" class="survey-card hidden">
       <div class="success-icon" aria-hidden="true">✓</div>
 
-      <h1>Thank You!</h1>
+      <h1 class="display-title">THANK YOU!</h1>
 
       <p class="success-message">
-        Response submitted successfully.
-      </p>
-
-      <p class="muted">
-        Thank you for sharing your perspective on innovation
-        in your organisation.
+        Response submitted successfully
       </p>
 
       <button
@@ -110,35 +103,16 @@
       </button>
     </section>
 
-    <!-- Individual results -->
     <section id="results-screen" class="survey-card hidden">
-      <p class="eyebrow">YOUR RESULTS</p>
-      <h1 class="category-title">Your Innovation Readiness Scores</h1>
-
-      <p class="muted results-intro">
-        Here's a summary of your answers to the three survey questions.
-      </p>
+      <p class="eyebrow">POLL RESULTS</p>
 
       <div class="average-score-card">
-        <p class="muted small-text">Your average score</p>
+        <p class="muted small-text">Average score</p>
         <p id="average-score" class="average-score">—</p>
         <p class="muted small-text">Out of 5</p>
       </div>
 
       <div id="results-content" class="personal-results"></div>
-
-      <p class="muted small-text results-note">
-        These scores reflect your individual responses. They are not
-        a diagnosis or a comparison with other participants.
-      </p>
-
-      <button
-        type="button"
-        id="back-to-thank-you-button"
-        class="secondary-button full-width"
-      >
-        Back to thank you page
-      </button>
     </section>
 
     <footer class="survey-footer">
