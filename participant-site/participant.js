@@ -78,7 +78,7 @@ function renderCategoryDescription() {
   const item = questions[currentQuestion];
 
   document.getElementById("category-description-title").textContent =
-    item.title;
+    item.title.toUpperCase();
 
   document.getElementById("category-description-text").textContent =
     item.description;
@@ -180,7 +180,7 @@ document.getElementById("join-button").addEventListener("click", async () => {
       "Something went wrong while opening the survey. Please try again.";
   } finally {
     button.disabled = false;
-    button.textContent = "Join Survey";
+    button.textContent = "Start Survey";
   }
 });
 
@@ -245,57 +245,182 @@ document.getElementById("answer-form").addEventListener("submit", async (event) 
   }
 });
 
-function renderPersonalResults() {
+/* Convert the 1–5 response scale to a 0–100 percentage.
+   Strongly disagree (1) = 0%; strongly agree (5) = 100%. */
+function scoreToPercentage(score) {
+  return ((Number(score) - 1) / 4) * 100;
+}
+
+function averageOf(values) {
+  const validValues = values
+    .map(Number)
+    .filter((value) => Number.isFinite(value) && value >= 1 && value <= 5);
+
+  if (!validValues.length) {
+    return null;
+  }
+
+  return validValues.reduce((sum, value) => sum + value, 0) /
+    validValues.length;
+}
+
+function createDonut(percentage, className, label) {
+  const size = 132;
+  const center = size / 2;
+  const radius = 48;
+  const circumference = 2 * Math.PI * radius;
+  const safePercentage = Math.max(0, Math.min(100, percentage));
+
+  const wrapper = document.createElement("div");
+  wrapper.className = `donut ${className}`;
+  wrapper.setAttribute("role", "img");
+  wrapper.setAttribute(
+    "aria-label",
+    `${label}: ${Math.round(safePercentage)} percent`
+  );
+
+  const svgNamespace = "http://www.w3.org/2000/svg";
+  const svg = document.createElementNS(svgNamespace, "svg");
+
+  svg.setAttribute("viewBox", `0 0 ${size} ${size}`);
+  svg.setAttribute("class", "donut-svg");
+  svg.setAttribute("aria-hidden", "true");
+
+  const backgroundCircle = document.createElementNS(
+    svgNamespace,
+    "circle"
+  );
+
+  backgroundCircle.setAttribute("cx", center);
+  backgroundCircle.setAttribute("cy", center);
+  backgroundCircle.setAttribute("r", radius);
+  backgroundCircle.setAttribute("class", "donut-track");
+
+  const valueCircle = document.createElementNS(svgNamespace, "circle");
+
+  valueCircle.setAttribute("cx", center);
+  valueCircle.setAttribute("cy", center);
+  valueCircle.setAttribute("r", radius);
+  valueCircle.setAttribute("class", "donut-value");
+  valueCircle.setAttribute("stroke-dasharray", String(circumference));
+  valueCircle.setAttribute(
+    "stroke-dashoffset",
+    String(circumference * (1 - safePercentage / 100))
+  );
+
+  svg.append(backgroundCircle, valueCircle);
+
+  const percentageText = document.createElement("span");
+  percentageText.className = "donut-percentage";
+  percentageText.textContent = `${Math.round(safePercentage)}%`;
+
+  const caption = document.createElement("span");
+  caption.className = "donut-caption";
+  caption.textContent = label;
+
+  wrapper.append(svg, percentageText, caption);
+
+  return wrapper;
+}
+
+async function getSessionAverages() {
+  const { data, error } = await supabaseClient
+    .from("responses")
+    .select("culture_score, practices_score, leadership_score")
+    .eq("session_id", sessionId);
+
+  if (error) {
+    console.error("Unable to retrieve session averages:", error);
+    return null;
+  }
+
+  if (!data || data.length === 0) {
+    return null;
+  }
+
+  return {
+    culture: averageOf(data.map((row) => row.culture_score)),
+    practices: averageOf(data.map((row) => row.practices_score)),
+    leadership: averageOf(data.map((row) => row.leadership_score))
+  };
+}
+
+async function renderPersonalResults() {
   const resultsContainer = document.getElementById("results-content");
+  const viewResultsButton = document.getElementById("view-results-button");
+
   resultsContainer.replaceChildren();
 
-  const scores = questions.map((item) => ({
-    title: item.title,
-    score: answers[item.key]
-  }));
+  viewResultsButton.disabled = true;
+  viewResultsButton.textContent = "Loading results...";
 
-  const total = scores.reduce((sum, item) => sum + item.score, 0);
-  const average = total / scores.length;
+  try {
+    const sessionAverages = await getSessionAverages();
 
-  document.getElementById("average-score").textContent =
-    `${average.toFixed(1)} / 5`;
+    questions.forEach((item) => {
+      const personalScore = answers[item.key];
+      const personalPercentage = scoreToPercentage(personalScore);
 
-  scores.forEach((item) => {
-    const resultCard = document.createElement("div");
-    resultCard.className = "personal-result-item";
+      const sessionAverageScore = sessionAverages
+        ? sessionAverages[item.key]
+        : null;
 
-    const heading = document.createElement("div");
-    heading.className = "personal-result-heading";
+      const categoryCard = document.createElement("article");
+      categoryCard.className = "category-result-card";
 
-    const title = document.createElement("span");
-    title.textContent = item.title;
+      const heading = document.createElement("h2");
+      heading.className = "category-result-title";
+      heading.textContent = item.title;
 
-    const score = document.createElement("strong");
-    score.textContent = `${item.score} / 5`;
+      const chartArea = document.createElement("div");
+      chartArea.className = "donut-pair";
 
-    heading.append(title, score);
+      const personalDonut = createDonut(
+        personalPercentage,
+        "your-result-donut",
+        "Your score"
+      );
 
-    const track = document.createElement("div");
-    track.className = "personal-result-track";
-    track.setAttribute("role", "progressbar");
-    track.setAttribute("aria-label", `${item.title} score`);
-    track.setAttribute("aria-valuemin", "1");
-    track.setAttribute("aria-valuemax", "5");
-    track.setAttribute("aria-valuenow", String(item.score));
+      chartArea.appendChild(personalDonut);
 
-    const fill = document.createElement("div");
-    fill.className = "personal-result-fill";
-    fill.style.width = `${(item.score / 5) * 100}%`;
+      if (sessionAverageScore !== null && sessionAverageScore !== undefined) {
+        const averagePercentage = scoreToPercentage(sessionAverageScore);
 
-    track.appendChild(fill);
-    resultCard.append(heading, track);
-    resultsContainer.appendChild(resultCard);
-  });
+        chartArea.appendChild(
+          createDonut(
+            averagePercentage,
+            "session-average-donut",
+            "Session average"
+          )
+        );
+      } else {
+        const unavailable = document.createElement("p");
+        unavailable.className = "session-average-unavailable";
+        unavailable.textContent = "Session average unavailable";
+        chartArea.appendChild(unavailable);
+      }
+
+      categoryCard.append(heading, chartArea);
+      resultsContainer.appendChild(categoryCard);
+    });
+  } catch (err) {
+    console.error("Unable to render poll results:", err);
+
+    const errorMessage = document.createElement("p");
+    errorMessage.className = "error-message";
+    errorMessage.textContent =
+      "Your response was submitted, but the poll results could not be loaded. Please try again later.";
+
+    resultsContainer.appendChild(errorMessage);
+  } finally {
+    viewResultsButton.disabled = false;
+    viewResultsButton.textContent = "View Results";
+  }
 }
 
 document
   .getElementById("view-results-button")
-  .addEventListener("click", () => {
-    renderPersonalResults();
+  .addEventListener("click", async () => {
     showScreen(resultsScreen);
+    await renderPersonalResults();
   });

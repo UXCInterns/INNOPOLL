@@ -16,6 +16,7 @@
 <body class="participant-body">
   <main class="participant-container">
 
+    <!-- Welcome -->
     <section id="welcome-screen" class="survey-card">
       <p class="eyebrow">INNOVATION READINESS POLL</p>
       <h1 class="display-title">INNOPOLL</h1>
@@ -26,15 +27,14 @@
       </p>
 
       <button id="join-button" class="primary-button full-width">
-        Join Survey
+        Start Survey
       </button>
 
       <p id="welcome-error" class="error-message" role="alert"></p>
     </section>
 
+    <!-- Category description -->
     <section id="category-description-screen" class="survey-card hidden">
-      <p class="eyebrow">CATEGORY INTRODUCTION</p>
-
       <h1 id="category-description-title" class="category-title">
         INNOVATION CULTURE
       </h1>
@@ -50,6 +50,7 @@
       </button>
     </section>
 
+    <!-- Question -->
     <section id="question-screen" class="survey-card hidden">
       <div class="question-topline">
         <span class="poll-wordmark">INNOPOLL</span>
@@ -85,6 +86,7 @@
       </form>
     </section>
 
+    <!-- Thank you -->
     <section id="success-screen" class="survey-card hidden">
       <div class="success-icon" aria-hidden="true">✓</div>
 
@@ -103,13 +105,19 @@
       </button>
     </section>
 
+    <!-- Poll results -->
     <section id="results-screen" class="survey-card hidden">
       <p class="eyebrow">POLL RESULTS</p>
 
-      <div class="average-score-card">
-        <p class="muted small-text">Average score</p>
-        <p id="average-score" class="average-score">—</p>
-        <p class="muted small-text">Out of 5</p>
+      <div class="results-legend">
+        <span class="legend-item">
+          <span class="legend-dot your-result-dot"></span>
+          Your result
+        </span>
+        <span class="legend-item">
+          <span class="legend-dot session-average-dot"></span>
+          Session average
+        </span>
       </div>
 
       <div id="results-content" class="personal-results"></div>

@@ -16,6 +16,8 @@
   --soft: #eef2f6;
   --danger: #b42318;
   --success: #18794e;
+  --your-result: #18794e;
+  --session-average: #6478b9;
 }
 
 * {
@@ -175,7 +177,7 @@ h3 {
   display: none;
 }
 
-/* Participant site */
+/* Participant layout */
 
 .participant-body {
   display: flex;
@@ -213,11 +215,50 @@ h3 {
   text-align: center;
 }
 
+/* Display titles share the Innopoll wordmark style */
+
+.display-title,
+.category-title {
+  font-family: "Arial Narrow", "Roboto Condensed", "Aptos Display", sans-serif;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.045em;
+  line-height: 1.2;
+}
+
+.display-title {
+  margin-bottom: 16px;
+  font-size: clamp(1.65rem, 3.5vw, 2rem);
+}
+
+.category-title {
+  margin-bottom: 16px;
+  font-size: clamp(1.45rem, 3vw, 1.8rem);
+}
+
+/* Category introduction pages */
+
+.category-intro-text {
+  margin: 0 0 28px;
+  color: var(--muted);
+  font-size: 1rem;
+  line-height: 1.85;
+}
+
+/* Question progress */
+
 .question-topline {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 12px;
+}
+
+.poll-wordmark {
+  color: var(--ink);
+  font-size: 0.85rem;
+  font-weight: 800;
+  letter-spacing: 0.07em;
 }
 
 .progress-track {
@@ -238,16 +279,78 @@ h3 {
 }
 
 .question-text {
-  margin: 24px 0 18px;
+  margin: 0 0 18px;
   font-size: 1.12rem;
-  line-height: 1.5;
+  line-height: 1.6;
   letter-spacing: -0.015em;
+}
+
+/* Definition dropdown */
+
+.definition-dropdown {
+  margin: 0 0 24px;
+  border: 1px solid #d1d7df;
+  border-radius: 10px;
+  background: #f1f3f6;
+}
+
+.definition-dropdown summary {
+  display: flex;
+  min-height: 46px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 11px 14px;
+  color: #626c79;
+  font-size: 0.85rem;
+  cursor: pointer;
+  list-style: none;
+}
+
+.definition-dropdown summary::-webkit-details-marker {
+  display: none;
+}
+
+.definition-dropdown summary::marker {
+  content: "";
+}
+
+.definition-chevron {
+  width: 9px;
+  height: 9px;
+  flex: 0 0 auto;
+  border-right: 1.5px solid currentColor;
+  border-bottom: 1.5px solid currentColor;
+  transform: rotate(45deg) translateY(-2px);
+  transition: transform 0.2s ease;
+}
+
+.definition-dropdown[open] .definition-chevron {
+  transform: rotate(225deg) translateY(-2px);
+}
+
+.definition-text {
+  margin: 0;
+  padding: 0 14px 15px;
+  color: #626c79;
+  font-size: 0.85rem;
+  line-height: 1.75;
+}
+
+/* Answer options */
+
+#answer-form {
+  margin-top: 0;
 }
 
 .answer-options {
   display: grid;
   gap: 10px;
   margin-bottom: 18px;
+}
+
+#answer-form .answer-options {
+  margin-top: 0;
 }
 
 .answer-option {
@@ -275,6 +378,25 @@ h3 {
   accent-color: var(--accent);
 }
 
+/* Green final submission button */
+
+.primary-button.submit-button {
+  border-color: #18794e;
+  background: #18794e;
+  color: #ffffff;
+}
+
+.primary-button.submit-button:hover {
+  border-color: #146c43;
+  background: #146c43;
+}
+
+.primary-button.submit-button:disabled {
+  background: #18794e;
+}
+
+/* Thank-you page */
+
 .success-icon {
   display: grid;
   width: 52px;
@@ -289,8 +411,151 @@ h3 {
 }
 
 .success-message {
+  margin-bottom: 24px;
   font-size: 1.05rem;
   font-weight: 400;
+}
+
+/* Poll results and legend */
+
+.results-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px 22px;
+  margin: 18px 0 24px;
+}
+
+.legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: #626c79;
+  font-size: 0.82rem;
+}
+
+.legend-dot {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  flex: 0 0 auto;
+  border-radius: 50%;
+}
+
+.your-result-dot {
+  background: var(--your-result);
+}
+
+.session-average-dot {
+  background: var(--session-average);
+}
+
+.personal-results {
+  display: grid;
+  gap: 18px;
+}
+
+.category-result-card {
+  min-width: 0;
+  padding: 20px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: #ffffff;
+}
+
+.category-result-title {
+  margin-bottom: 20px;
+  font-family: "Arial Narrow", "Roboto Condensed", "Aptos Display", sans-serif;
+  font-size: 1rem;
+  font-weight: 800;
+  letter-spacing: 0.035em;
+  line-height: 1.4;
+  text-transform: uppercase;
+}
+
+/* Two donut charts per category */
+
+.donut-pair {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  align-items: start;
+  justify-items: center;
+  gap: 16px;
+}
+
+.donut {
+  position: relative;
+  display: flex;
+  width: 100%;
+  max-width: 150px;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  padding-top: 2px;
+}
+
+.donut-svg {
+  display: block;
+  width: 100%;
+  max-width: 132px;
+  height: auto;
+  overflow: visible;
+  transform: rotate(-90deg);
+}
+
+.donut-track,
+.donut-value {
+  fill: none;
+  stroke-width: 10;
+}
+
+.donut-track {
+  stroke: #e9edf2;
+}
+
+.donut-value {
+  stroke-linecap: round;
+  transition: stroke-dashoffset 0.5s ease;
+}
+
+.your-result-donut .donut-value {
+  stroke: var(--your-result);
+}
+
+.session-average-donut .donut-value {
+  stroke: var(--session-average);
+}
+
+/* Percentage displayed in the centre of each donut */
+
+.donut-percentage {
+  position: absolute;
+  top: 43px;
+  left: 50%;
+  width: 90px;
+  color: var(--ink);
+  font-size: 1.35rem;
+  font-weight: 750;
+  line-height: 1.3;
+  text-align: center;
+  transform: translateX(-50%);
+  pointer-events: none;
+}
+
+.donut-caption {
+  display: block;
+  margin-top: 8px;
+  color: #87909d;
+  font-size: 0.8rem;
+  line-height: 1.4;
+  text-align: center;
+}
+
+.session-average-unavailable {
+  align-self: center;
+  margin: 0;
+  color: #87909d;
+  font-size: 0.8rem;
+  text-align: center;
 }
 
 /* Facilitator dashboard */
@@ -514,6 +779,8 @@ h3 {
   margin-right: 8px;
 }
 
+/* Responsive layouts */
+
 @media (max-width: 760px) {
   .dashboard-container {
     padding: 24px 14px 40px;
@@ -553,6 +820,35 @@ h3 {
     padding: 22px 18px;
   }
 
+  .category-intro-text {
+    font-size: 0.95rem;
+  }
+
+  .definition-dropdown summary {
+    min-height: 44px;
+  }
+
+  .donut-pair {
+    gap: 8px;
+  }
+
+  .donut {
+    max-width: 135px;
+  }
+
+  .donut-percentage {
+    top: 39px;
+    font-size: 1.2rem;
+  }
+
+  .donut-caption {
+    font-size: 0.76rem;
+  }
+
+  .category-result-card {
+    padding: 16px 12px;
+  }
+
   .dashboard-header {
     align-items: flex-start;
     padding: 12px 14px;
@@ -581,185 +877,5 @@ h3 {
   #toggle-session-button {
     width: 100%;
     margin-right: 0;
-  }
-}
-
-/* Latest participant UI refinements */
-
-/* Distinctive uppercase display titles */
-.display-title,
-.category-title {
-  font-family: "Arial Narrow", "Roboto Condensed", "Aptos Display",
-    sans-serif;
-  font-weight: 800;
-  text-transform: uppercase;
-  letter-spacing: 0.045em;
-  line-height: 1.2;
-}
-
-.display-title {
-  font-size: clamp(1.65rem, 3.5vw, 2rem);
-}
-
-.category-title {
-  font-size: clamp(1.45rem, 3vw, 1.8rem);
-}
-
-/* Small wordmark beside the progress count */
-.poll-wordmark {
-  color: var(--ink);
-  font-size: 0.85rem;
-  font-weight: 800;
-  letter-spacing: 0.07em;
-}
-
-/* Slightly darker definition dropdown */
-.definition-dropdown {
-  margin: 0 0 24px;
-  border: 1px solid #d1d7df;
-  border-radius: 10px;
-  background: #f1f3f6;
-}
-
-.definition-dropdown summary {
-  display: flex;
-  min-height: 46px;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  padding: 11px 14px;
-  color: #626c79;
-  font-size: 0.85rem;
-  cursor: pointer;
-  list-style: none;
-}
-
-.definition-dropdown summary::-webkit-details-marker {
-  display: none;
-}
-
-.definition-dropdown summary::marker {
-  content: "";
-}
-
-.definition-chevron {
-  width: 9px;
-  height: 9px;
-  flex: 0 0 auto;
-  border-right: 1.5px solid currentColor;
-  border-bottom: 1.5px solid currentColor;
-  transform: rotate(45deg) translateY(-2px);
-  transition: transform 0.2s ease;
-}
-
-.definition-dropdown[open] .definition-chevron {
-  transform: rotate(225deg) translateY(-2px);
-}
-
-.definition-text {
-  margin: 0;
-  padding: 0 14px 15px;
-  color: #626c79;
-  font-size: 0.85rem;
-  line-height: 1.75;
-}
-
-/* Answer options */
-#answer-form {
-  margin-top: 0;
-}
-
-#answer-form .answer-options {
-  margin-top: 0;
-}
-
-/* Green final submission button */
-.primary-button.submit-button {
-  border-color: #18794e;
-  background: #18794e;
-  color: #ffffff;
-}
-
-.primary-button.submit-button:hover {
-  border-color: #146c43;
-  background: #146c43;
-}
-
-.primary-button.submit-button:disabled {
-  background: #18794e;
-}
-
-/* Individual results */
-.average-score-card {
-  margin: 22px 0 28px;
-  padding: 22px;
-  border: 1px solid var(--line);
-  border-radius: 14px;
-  background: #f8fafc;
-  text-align: center;
-}
-
-.average-score-card p {
-  margin-bottom: 4px;
-}
-
-.average-score {
-  margin: 4px 0;
-  color: var(--ink);
-  font-size: clamp(2rem, 6vw, 2.6rem);
-  font-weight: 750;
-  line-height: 1.2;
-  letter-spacing: -0.05em;
-  white-space: nowrap;
-}
-
-.personal-results {
-  display: grid;
-  gap: 22px;
-}
-
-.personal-result-item {
-  min-width: 0;
-}
-
-.personal-result-heading {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  margin-bottom: 9px;
-  font-size: 0.92rem;
-}
-
-.personal-result-heading strong {
-  white-space: nowrap;
-}
-
-.personal-result-track {
-  width: 100%;
-  height: 8px;
-  overflow: hidden;
-  border-radius: 99px;
-  background: #e8edf2;
-}
-
-.personal-result-fill {
-  height: 100%;
-  border-radius: inherit;
-  background: #18794e;
-  transition: width 0.3s ease;
-}
-
-@media (max-width: 480px) {
-  .category-intro-text {
-    font-size: 0.95rem;
-  }
-
-  .definition-dropdown summary {
-    min-height: 44px;
-  }
-
-  .average-score-card {
-    padding: 18px;
   }
 }
