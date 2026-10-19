@@ -312,8 +312,14 @@ function createDonut(percentage, className, label) {
 
   const percentageText = document.createElement("span");
   percentageText.className = "donut-percentage";
-  percentageText.textContent = `${Math.round(safePercentage)}%`;
+  const number = document.createElement("span");
+  number.textContent = String(Math.round(safePercentage));
 
+  const percentSign = document.createElement("span");
+  percentSign.className = "donut-percent-sign";
+  percentSign.textContent = "%";
+
+  percentageText.append(number, percentSign);
   const caption = document.createElement("span");
   caption.className = "donut-caption";
   caption.textContent = label;
