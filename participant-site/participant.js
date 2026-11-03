@@ -86,7 +86,7 @@ function renderCategoryDescription() {
   const item = questions[currentQuestion];
 
   document.getElementById("category-description-title").textContent =
-    item.title.toUpperCase();
+    "INNOPOLL";
 
   document.getElementById("category-description-text").textContent =
     item.description;
