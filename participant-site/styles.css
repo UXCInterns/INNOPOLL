@@ -398,7 +398,7 @@ p {
   color: var(--green);
   font-size: clamp(2rem, 5vw, 2.5rem);
   font-weight: 850;
-  letter-spacing: 0.07em;
+  letter-spacing: 0.05em;
 }
 
 .success-message {
