@@ -1,59 +1,105 @@
-
 /* FILE: participant.js */
 
-const { createClient } = window.supabase;
-const config = window.INNOPOLL_CONFIG;
+/* =========================================
+   SUPABASE CONFIGURATION
+   ========================================= */
 
-const supabaseClient = createClient(
-  config.SUPABASE_URL,
-  config.SUPABASE_PUBLISHABLE_KEY
-);
+const config = window.INNOPOLL_CONFIG || {};
+
+const supabaseReady =
+  Boolean(config.SUPABASE_URL) &&
+  Boolean(config.SUPABASE_PUBLISHABLE_KEY);
+
+const supabaseClient = supabaseReady
+  ? window.supabase.createClient(
+      config.SUPABASE_URL,
+      config.SUPABASE_PUBLISHABLE_KEY
+    )
+  : null;
+
+
+/* =========================================
+   SURVEY QUESTIONS
+   ========================================= */
 
 const questions = [
   {
     key: "culture",
+
     title: "Innovation Culture",
+
     description:
       "An Innovation Culture fosters an atmosphere where employees feel empowered to take risks, collaborate, and continuously seek out opportunities for improvement and innovation in products, processes, or services. This is essential to staying competitive in today's rapidly changing landscape.",
+
     question:
       "Does your company embrace discussions on experimentation to generate and test new ideas, concepts, business models, etc. to innovate?"
   },
+
   {
     key: "practices",
+
     title: "Innovation Practices",
+
     description:
       "Innovation Practices often involve fostering a culture of innovation, conducting research and development, leveraging on technology and tools and processes for collaboration to thrive in an ever changing environmental and economic uncertainty to achieve sustainable advancements for all users.",
+
     question:
       "How often does your company use business models, startup methodologies, design thinking or any other innovation tools and methods?"
   },
+
   {
     key: "leadership",
+
     title: "Innovation Leadership",
+
     description:
       "Innovation leadership inspires organisations to foster a creative culture. They do not only champion and support creative thinking but also provide strategic direction, allocate resources, and create an environment where experimentation and calculated risk-taking are encouraged.",
+
     question:
       "How often do leaders in your organisation encourage the need for innovation and provide the resources to support innovation efforts?"
   }
 ];
 
+
+/* =========================================
+   ANSWER SCALE
+   1 = Strongly Disagree
+   5 = Strongly Agree
+   ========================================= */
+
 const scale = [
-  { value: 5, label: "Strongly agree" },
-  { value: 4, label: "Agree" },
-  { value: 3, label: "Neutral" },
+  { value: 1, label: "Strongly Disagree" },
   { value: 2, label: "Disagree" },
-  { value: 1, label: "Strongly disagree" }
+  { value: 3, label: "Neutral" },
+  { value: 4, label: "Agree" },
+  { value: 5, label: "Strongly Agree" }
 ];
 
+
+/* =========================================
+   SURVEY STATE
+   ========================================= */
+
 let currentQuestion = 0;
-const answers = {};
 let sessionId = null;
 
+const answers = {};
+
+
+/* =========================================
+   SCREEN ELEMENTS
+   ========================================= */
+
 const welcomeScreen = document.getElementById("welcome-screen");
+
 const descriptionScreen = document.getElementById(
   "category-description-screen"
 );
+
 const questionScreen = document.getElementById("question-screen");
+
 const successScreen = document.getElementById("success-screen");
+
 const resultsScreen = document.getElementById("results-screen");
 
 const allScreens = [
@@ -64,270 +110,379 @@ const allScreens = [
   resultsScreen
 ];
 
+
+/* =========================================
+   SCREEN NAVIGATION
+   ========================================= */
+
 function showScreen(screen) {
-  allScreens.forEach((item) => item.classList.add("hidden"));
+  allScreens.forEach((item) => {
+    item.classList.add("hidden");
+  });
+
   screen.classList.remove("hidden");
-  window.scrollTo({ top: 0, behavior: "smooth" });
+
+  document.body.classList.toggle(
+    "results-mode",
+    screen === resultsScreen
+  );
+
+  window.scrollTo({
+    top: 0,
+    behavior: "smooth"
+  });
 }
 
+
+/* =========================================
+   SESSION ID
+   ========================================= */
+
 function getSessionIdFromUrl() {
-  return new URLSearchParams(window.location.search).get("session");
+  return new URLSearchParams(window.location.search)
+    .get("session");
 }
+
+
+/* =========================================
+   CATEGORY INTRODUCTION
+   ========================================= */
 
 function renderCategoryDescription() {
   const item = questions[currentQuestion];
 
-  document.getElementById("category-description-title").textContent =
-    item.title.toUpperCase();
+  document.getElementById(
+    "category-description-title"
+  ).textContent = item.title.toUpperCase();
 
-  document.getElementById("category-description-text").textContent =
-    item.description;
+  document.getElementById(
+    "category-description-text"
+  ).textContent = item.description;
 }
+
+
+/* =========================================
+   QUESTION RENDERING
+   ========================================= */
 
 function renderQuestion() {
   const item = questions[currentQuestion];
 
-  document.getElementById("progress-label").textContent =
+  const progressLabel = document.getElementById(
+    "progress-label"
+  );
+
+  const progressFill = document.getElementById(
+    "progress-fill"
+  );
+
+  const questionText = document.getElementById(
+    "question-text"
+  );
+
+  const definitionText = document.getElementById(
+    "question-definition"
+  );
+
+  const optionsContainer = document.getElementById(
+    "answer-options"
+  );
+
+  const nextButton = document.getElementById(
+    "next-button"
+  );
+
+  progressLabel.textContent =
     `${currentQuestion + 1} of ${questions.length}`;
 
-  document.getElementById("progress-fill").style.width =
+  progressFill.style.width =
     `${((currentQuestion + 1) / questions.length) * 100}%`;
 
-  document.getElementById("question-text").textContent = item.question;
-  document.getElementById("question-definition").textContent =
-    item.description;
+  questionText.textContent = item.question;
 
-  document.querySelector(".definition-dropdown").open = false;
+  definitionText.textContent = item.description;
 
-  const optionsContainer = document.getElementById("answer-options");
+  document.querySelector(
+    ".definition-dropdown"
+  ).open = false;
+
   optionsContainer.replaceChildren();
 
   scale.forEach((option) => {
     const label = document.createElement("label");
+
     label.className = "answer-option";
 
     const input = document.createElement("input");
+
     input.type = "radio";
     input.name = "answer";
     input.value = String(option.value);
     input.required = true;
-    input.checked = answers[item.key] === option.value;
+
+    input.checked =
+      answers[item.key] === option.value;
+
+    const radioVisual = document.createElement("span");
+
+    radioVisual.className = "custom-radio";
+
+    radioVisual.setAttribute("aria-hidden", "true");
 
     const text = document.createElement("span");
+
+    text.className = "answer-label";
     text.textContent = option.label;
 
-    label.append(input, text);
+    label.append(input, radioVisual, text);
+
     optionsContainer.appendChild(label);
   });
 
-  document.getElementById("answer-error").textContent = "";
+  document.getElementById(
+    "answer-error"
+  ).textContent = "";
 
-  const nextButton = document.getElementById("next-button");
-  const isLastQuestion = currentQuestion === questions.length - 1;
+  const isLastQuestion =
+    currentQuestion === questions.length - 1;
 
   nextButton.textContent = isLastQuestion
-    ? "Submit response"
+    ? "Submit Response"
     : "Next";
 
-  nextButton.classList.toggle("submit-button", isLastQuestion);
+  nextButton.classList.toggle(
+    "submit-button",
+    isLastQuestion
+  );
 }
 
-document.getElementById("join-button").addEventListener("click", async () => {
-  const error = document.getElementById("welcome-error");
-  const button = document.getElementById("join-button");
 
-  error.textContent = "";
-  sessionId = getSessionIdFromUrl();
+/* =========================================
+   START SURVEY
+   ========================================= */
 
-  if (!sessionId) {
-    error.textContent =
-      "Please open the survey using the QR code or link provided by your facilitator.";
-    return;
-  }
+document
+  .getElementById("join-button")
+  .addEventListener("click", async () => {
 
-  button.disabled = true;
-  button.textContent = "Checking survey...";
+    const error = document.getElementById("welcome-error");
 
-  try {
-    const { data, error: sessionError } = await supabaseClient
-      .from("sessions")
-      .select("id, is_active")
-      .eq("id", sessionId)
-      .eq("is_active", true)
-      .maybeSingle();
+    const button = document.getElementById("join-button");
 
-    if (sessionError) {
-      console.error("Session lookup failed:", sessionError);
+    error.textContent = "";
+
+    sessionId = getSessionIdFromUrl();
+
+    if (!supabaseClient) {
       error.textContent =
-        "We couldn't check this survey session. Please try again.";
+        "The survey is not configured yet. Please contact your facilitator.";
+
       return;
     }
 
-    if (!data) {
+    if (!sessionId) {
       error.textContent =
-        "This survey session is unavailable or has been closed. Please check with your facilitator.";
+        "Please open the survey using the QR code or link provided by your facilitator.";
+
       return;
     }
 
-    currentQuestion = 0;
-    Object.keys(answers).forEach((key) => delete answers[key]);
+    button.disabled = true;
+    button.textContent = "Checking Survey...";
 
-    renderCategoryDescription();
-    showScreen(descriptionScreen);
-  } catch (err) {
-    console.error("Unable to join survey:", err);
-    error.textContent =
-      "Something went wrong while opening the survey. Please try again.";
-  } finally {
-    button.disabled = false;
-    button.textContent = "Start Survey";
-  }
-});
+    try {
+      const { data, error: sessionError } = await supabaseClient
+        .from("sessions")
+        .select("id, is_active")
+        .eq("id", sessionId)
+        .eq("is_active", true)
+        .maybeSingle();
+
+      if (sessionError) {
+        console.error("Session lookup failed:", sessionError);
+
+        error.textContent =
+          "We couldn't check this survey session. Please try again.";
+
+        return;
+      }
+
+      if (!data) {
+        error.textContent =
+          "This survey session is unavailable or has been closed. Please check with your facilitator.";
+
+        return;
+      }
+
+      currentQuestion = 0;
+
+      Object.keys(answers).forEach((key) => {
+        delete answers[key];
+      });
+
+      renderCategoryDescription();
+
+      showScreen(descriptionScreen);
+
+    } catch (err) {
+      console.error("Unable to join survey:", err);
+
+      error.textContent =
+        "Something went wrong while opening the survey. Please try again.";
+
+    } finally {
+      button.disabled = false;
+      button.textContent = "Start Survey";
+    }
+  });
+
+
+/* =========================================
+   CATEGORY INTRODUCTION → QUESTION
+   ========================================= */
 
 document
   .getElementById("description-next-button")
   .addEventListener("click", () => {
+
     renderQuestion();
+
     showScreen(questionScreen);
   });
 
-document.getElementById("answer-form").addEventListener("submit", async (event) => {
-  event.preventDefault();
 
-  const selected = document.querySelector('input[name="answer"]:checked');
-  const error = document.getElementById("answer-error");
+/* =========================================
+   ANSWER SUBMISSION AND NAVIGATION
+   ========================================= */
 
-  if (!selected) {
-    error.textContent = "Please select an answer to continue.";
-    return;
-  }
+document
+  .getElementById("answer-form")
+  .addEventListener("submit", async (event) => {
 
-  const question = questions[currentQuestion];
-  answers[question.key] = Number(selected.value);
+    event.preventDefault();
 
-  if (currentQuestion < questions.length - 1) {
-    currentQuestion += 1;
-    renderCategoryDescription();
-    showScreen(descriptionScreen);
-    return;
-  }
+    const selected = document.querySelector(
+      'input[name="answer"]:checked'
+    );
 
-  const button = document.getElementById("next-button");
-  button.disabled = true;
-  button.textContent = "Submitting...";
-  error.textContent = "";
+    const error = document.getElementById("answer-error");
 
-  try {
-    const { error: submitError } = await supabaseClient
-      .from("responses")
-      .insert({
-        session_id: sessionId,
-        culture_score: answers.culture,
-        practices_score: answers.practices,
-        leadership_score: answers.leadership
-      });
-
-    if (submitError) {
-      console.error("Response submission failed:", submitError);
+    if (!selected) {
       error.textContent =
-        "We couldn't submit your response. Please check your connection and try again.";
+        "Please select an answer to continue.";
+
       return;
     }
 
-    showScreen(successScreen);
-  } catch (err) {
-    console.error("Unexpected submission error:", err);
-    error.textContent =
-      "Something went wrong while submitting. Please try again.";
-  } finally {
-    button.disabled = false;
-    button.textContent = "Submit response";
-  }
-});
+    const question = questions[currentQuestion];
 
-/* Convert the 1–5 response scale to a 0–100 percentage.
-   Strongly disagree (1) = 0%; strongly agree (5) = 100%. */
+    answers[question.key] = Number(selected.value);
+
+    /* Move to the next question */
+
+    if (currentQuestion < questions.length - 1) {
+      currentQuestion += 1;
+
+      renderCategoryDescription();
+
+      showScreen(descriptionScreen);
+
+      return;
+    }
+
+    /* Submit the completed survey */
+
+    const button = document.getElementById("next-button");
+
+    button.disabled = true;
+
+    button.textContent = "Submitting...";
+
+    error.textContent = "";
+
+    try {
+      const { error: submitError } = await supabaseClient
+        .from("responses")
+        .insert({
+          session_id: sessionId,
+          culture_score: answers.culture,
+          practices_score: answers.practices,
+          leadership_score: answers.leadership
+        });
+
+      if (submitError) {
+        console.error("Response submission failed:", submitError);
+
+        error.textContent =
+          "We couldn't submit your response. Please check your connection and try again.";
+
+        return;
+      }
+
+      showScreen(successScreen);
+
+    } catch (err) {
+      console.error("Unexpected submission error:", err);
+
+      error.textContent =
+        "Something went wrong while submitting. Please try again.";
+
+    } finally {
+      button.disabled = false;
+      button.textContent = "Submit Response";
+    }
+  });
+
+
+/* =========================================
+   SCORE CALCULATIONS
+   ========================================= */
+
+/*
+  Convert the 1–5 response scale to a percentage.
+
+  1 = 0%
+  2 = 25%
+  3 = 50%
+  4 = 75%
+  5 = 100%
+*/
+
 function scoreToPercentage(score) {
   return ((Number(score) - 1) / 4) * 100;
 }
 
+
 function averageOf(values) {
   const validValues = values
     .map(Number)
-    .filter((value) => Number.isFinite(value) && value >= 1 && value <= 5);
+    .filter((value) =>
+      Number.isFinite(value) &&
+      value >= 1 &&
+      value <= 5
+    );
 
-  if (!validValues.length) {
+  if (validValues.length === 0) {
     return null;
   }
 
-  return validValues.reduce((sum, value) => sum + value, 0) /
-    validValues.length;
+  return validValues.reduce(
+    (sum, value) => sum + value,
+    0
+  ) / validValues.length;
 }
 
-function createDonut(percentage, className, label) {
-  const size = 132;
-  const center = size / 2;
-  const radius = 48;
-  const circumference = 2 * Math.PI * radius;
-  const safePercentage = Math.max(0, Math.min(100, percentage));
 
-  const wrapper = document.createElement("div");
-  wrapper.className = `donut ${className}`;
-  wrapper.setAttribute("role", "img");
-  wrapper.setAttribute(
-    "aria-label",
-    `${label}: ${Math.round(safePercentage)} percent`
-  );
+function formatPercentage(value) {
+  const rounded = Number(value.toFixed(2));
 
-  const svgNamespace = "http://www.w3.org/2000/svg";
-  const svg = document.createElementNS(svgNamespace, "svg");
-
-  svg.setAttribute("viewBox", `0 0 ${size} ${size}`);
-  svg.setAttribute("class", "donut-svg");
-  svg.setAttribute("aria-hidden", "true");
-
-  const backgroundCircle = document.createElementNS(
-    svgNamespace,
-    "circle"
-  );
-
-  backgroundCircle.setAttribute("cx", center);
-  backgroundCircle.setAttribute("cy", center);
-  backgroundCircle.setAttribute("r", radius);
-  backgroundCircle.setAttribute("class", "donut-track");
-
-  const valueCircle = document.createElementNS(svgNamespace, "circle");
-
-  valueCircle.setAttribute("cx", center);
-  valueCircle.setAttribute("cy", center);
-  valueCircle.setAttribute("r", radius);
-  valueCircle.setAttribute("class", "donut-value");
-  valueCircle.setAttribute("stroke-dasharray", String(circumference));
-  valueCircle.setAttribute(
-    "stroke-dashoffset",
-    String(circumference * (1 - safePercentage / 100))
-  );
-
-  svg.append(backgroundCircle, valueCircle);
-
-  const percentageText = document.createElement("span");
-  percentageText.className = "donut-percentage";
-  const number = document.createElement("span");
-  number.textContent = String(Math.round(safePercentage));
-
-  const percentSign = document.createElement("span");
-  percentSign.className = "donut-percent-sign";
-  percentSign.textContent = "%";
-
-  percentageText.append(number, percentSign);
-  const caption = document.createElement("span");
-  caption.className = "donut-caption";
-  caption.textContent = label;
-
-  wrapper.append(svg, percentageText, caption);
-
-  return wrapper;
+  return `${rounded}%`;
 }
+
+
+/* =========================================
+   FETCH SESSION AVERAGES
+   ========================================= */
 
 async function getSessionAverages() {
   const { data, error } = await supabaseClient
@@ -336,8 +491,12 @@ async function getSessionAverages() {
     .eq("session_id", sessionId);
 
   if (error) {
-    console.error("Unable to retrieve session averages:", error);
-    return null;
+    console.error(
+      "Unable to retrieve session averages:",
+      error
+    );
+
+    throw error;
   }
 
   if (!data || data.length === 0) {
@@ -345,88 +504,394 @@ async function getSessionAverages() {
   }
 
   return {
-    culture: averageOf(data.map((row) => row.culture_score)),
-    practices: averageOf(data.map((row) => row.practices_score)),
-    leadership: averageOf(data.map((row) => row.leadership_score))
+    culture: averageOf(
+      data.map((row) => row.culture_score)
+    ),
+
+    practices: averageOf(
+      data.map((row) => row.practices_score)
+    ),
+
+    leadership: averageOf(
+      data.map((row) => row.leadership_score)
+    )
   };
 }
 
+
+/* =========================================
+   CREATE CONCENTRIC DOUGHNUT CHART
+   ========================================= */
+
+/*
+  Outer ring:
+  Session average (light blue)
+
+  Inner ring:
+  Your result (green)
+
+  Centre:
+  Your personal percentage
+*/
+
+function createDonut(personalPercentage, averagePercentage) {
+
+  const size = 180;
+  const center = size / 2;
+
+  const outerRadius = 72;
+  const innerRadius = 53;
+
+  const circumference = (radius) =>
+    2 * Math.PI * radius;
+
+  const safePercentage = (percentage) =>
+    Math.max(0, Math.min(100, percentage));
+
+  const personal = safePercentage(personalPercentage);
+
+  const average = averagePercentage === null
+    ? null
+    : safePercentage(averagePercentage);
+
+  const svgNamespace = "http://www.w3.org/2000/svg";
+
+  const wrapper = document.createElement("div");
+
+  wrapper.className = "donut-chart";
+
+  wrapper.setAttribute(
+    "role",
+    "img"
+  );
+
+  wrapper.setAttribute(
+    "aria-label",
+    `Your score ${formatPercentage(personal)}. Session average ${
+      average === null
+        ? "unavailable"
+        : formatPercentage(average)
+    }.`
+  );
+
+  const svg = document.createElementNS(
+    svgNamespace,
+    "svg"
+  );
+
+  svg.setAttribute(
+    "viewBox",
+    `0 0 ${size} ${size}`
+  );
+
+  svg.setAttribute(
+    "class",
+    "donut-svg"
+  );
+
+  svg.setAttribute(
+    "aria-hidden",
+    "true"
+  );
+
+
+  /* Outer session average track */
+
+  const outerTrack = document.createElementNS(
+    svgNamespace,
+    "circle"
+  );
+
+  outerTrack.setAttribute("cx", center);
+  outerTrack.setAttribute("cy", center);
+  outerTrack.setAttribute("r", outerRadius);
+  outerTrack.setAttribute("class", "donut-track outer-track");
+
+
+  /* Outer session average value */
+
+  const outerValue = document.createElementNS(
+    svgNamespace,
+    "circle"
+  );
+
+  outerValue.setAttribute("cx", center);
+  outerValue.setAttribute("cy", center);
+  outerValue.setAttribute("r", outerRadius);
+  outerValue.setAttribute("class", "donut-value outer-value");
+
+  outerValue.setAttribute(
+    "stroke-dasharray",
+    String(circumference(outerRadius))
+  );
+
+  outerValue.setAttribute(
+    "stroke-dashoffset",
+    String(
+      circumference(outerRadius) *
+      (1 - (average ?? 0) / 100)
+    )
+  );
+
+
+  /* Inner personal result track */
+
+  const innerTrack = document.createElementNS(
+    svgNamespace,
+    "circle"
+  );
+
+  innerTrack.setAttribute("cx", center);
+  innerTrack.setAttribute("cy", center);
+  innerTrack.setAttribute("r", innerRadius);
+  innerTrack.setAttribute("class", "donut-track inner-track");
+
+
+  /* Inner personal result value */
+
+  const innerValue = document.createElementNS(
+    svgNamespace,
+    "circle"
+  );
+
+  innerValue.setAttribute("cx", center);
+  innerValue.setAttribute("cy", center);
+  innerValue.setAttribute("r", innerRadius);
+  innerValue.setAttribute("class", "donut-value inner-value");
+
+  innerValue.setAttribute(
+    "stroke-dasharray",
+    String(circumference(innerRadius))
+  );
+
+  innerValue.setAttribute(
+    "stroke-dashoffset",
+    String(
+      circumference(innerRadius) *
+      (1 - personal / 100)
+    )
+  );
+
+
+  /* Draw the rings */
+
+  svg.append(
+    outerTrack,
+    outerValue,
+    innerTrack,
+    innerValue
+  );
+
+
+  /* Centre percentage */
+
+  const centreContent = document.createElement("div");
+
+  centreContent.className = "donut-centre";
+
+  const percentage = document.createElement("span");
+
+  percentage.className = "donut-percentage";
+
+  percentage.textContent = formatPercentage(personal);
+
+  const caption = document.createElement("span");
+
+  caption.className = "donut-caption";
+
+  caption.textContent = "Your Score";
+
+  centreContent.append(
+    percentage,
+    caption
+  );
+
+  wrapper.append(
+    svg,
+    centreContent
+  );
+
+  return wrapper;
+}
+
+
+/* =========================================
+   CREATE RESULTS LEGEND
+   ========================================= */
+
+function createLegendRow(label, percentage, className) {
+
+  const row = document.createElement("div");
+
+  row.className = "result-legend-row";
+
+  const labelContainer = document.createElement("div");
+
+  labelContainer.className = "result-legend-label";
+
+  const dot = document.createElement("span");
+
+  dot.className = `legend-dot ${className}`;
+
+  const text = document.createElement("span");
+
+  text.textContent = label;
+
+  labelContainer.append(
+    dot,
+    text
+  );
+
+  const value = document.createElement("span");
+
+  value.className = "result-legend-value";
+
+  value.textContent = percentage === null
+    ? "N/A"
+    : formatPercentage(percentage);
+
+  row.append(
+    labelContainer,
+    value
+  );
+
+  return row;
+}
+
+
+/* =========================================
+   RENDER PERSONAL RESULTS
+   ========================================= */
+
 async function renderPersonalResults() {
-  const resultsContainer = document.getElementById("results-content");
-  const viewResultsButton = document.getElementById("view-results-button");
+
+  const resultsContainer = document.getElementById(
+    "results-content"
+  );
+
+  const resultsError = document.getElementById(
+    "results-error"
+  );
 
   resultsContainer.replaceChildren();
 
-  viewResultsButton.disabled = true;
-  viewResultsButton.textContent = "Loading results...";
+  resultsError.textContent = "";
 
   try {
+
     const sessionAverages = await getSessionAverages();
 
     questions.forEach((item) => {
+
       const personalScore = answers[item.key];
-      const personalPercentage = scoreToPercentage(personalScore);
+
+      const personalPercentage =
+        scoreToPercentage(personalScore);
 
       const sessionAverageScore = sessionAverages
         ? sessionAverages[item.key]
         : null;
 
+      const sessionAveragePercentage =
+        sessionAverageScore === null
+          ? null
+          : scoreToPercentage(sessionAverageScore);
+
+
+      /* Category card */
+
       const categoryCard = document.createElement("article");
+
       categoryCard.className = "category-result-card";
 
+
+      /* Category heading */
+
       const heading = document.createElement("h2");
+
       heading.className = "category-result-title";
+
       heading.textContent = item.title;
 
-      const chartArea = document.createElement("div");
-      chartArea.className = "donut-pair";
 
-      const personalDonut = createDonut(
+      /* Chart */
+
+      const chartWrapper = document.createElement("div");
+
+      chartWrapper.className = "result-chart-wrapper";
+
+      const chart = createDonut(
         personalPercentage,
-        "your-result-donut",
-        "Your score"
+        sessionAveragePercentage
       );
 
-      chartArea.appendChild(personalDonut);
+      chartWrapper.appendChild(chart);
 
-      if (sessionAverageScore !== null && sessionAverageScore !== undefined) {
-        const averagePercentage = scoreToPercentage(sessionAverageScore);
 
-        chartArea.appendChild(
-          createDonut(
-            averagePercentage,
-            "session-average-donut",
-            "Session average"
-          )
-        );
-      } else {
-        const unavailable = document.createElement("p");
-        unavailable.className = "session-average-unavailable";
-        unavailable.textContent = "Session average unavailable";
-        chartArea.appendChild(unavailable);
-      }
+      /* Legend */
 
-      categoryCard.append(heading, chartArea);
+      const legend = document.createElement("div");
+
+      legend.className = "result-legend";
+
+      legend.append(
+        createLegendRow(
+          "Your Result",
+          personalPercentage,
+          "your-result-dot"
+        ),
+
+        createLegendRow(
+          "Session Avg",
+          sessionAveragePercentage,
+          "session-average-dot"
+        )
+      );
+
+
+      /* Assemble card */
+
+      categoryCard.append(
+        heading,
+        chartWrapper,
+        legend
+      );
+
       resultsContainer.appendChild(categoryCard);
-    });
-  } catch (err) {
-    console.error("Unable to render poll results:", err);
 
-    const errorMessage = document.createElement("p");
-    errorMessage.className = "error-message";
-    errorMessage.textContent =
+    });
+
+  } catch (err) {
+
+    console.error(
+      "Unable to render poll results:",
+      err
+    );
+
+    resultsError.textContent =
       "Your response was submitted, but the poll results could not be loaded. Please try again later.";
 
-    resultsContainer.appendChild(errorMessage);
-  } finally {
-    viewResultsButton.disabled = false;
-    viewResultsButton.textContent = "View Results";
   }
 }
+
+
+/* =========================================
+   VIEW RESULTS
+   ========================================= */
 
 document
   .getElementById("view-results-button")
   .addEventListener("click", async () => {
+
     showScreen(resultsScreen);
+
+    const resultsContainer = document.getElementById(
+      "results-content"
+    );
+
+    resultsContainer.innerHTML =
+      '<p class="results-loading">Loading poll results...</p>';
+
     await renderPersonalResults();
+
   });

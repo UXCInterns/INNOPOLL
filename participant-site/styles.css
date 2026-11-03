@@ -1,34 +1,58 @@
-
-/* FILE: styles.css */
+/* =========================================
+   INNOPOLL PARTICIPANT SITE
+   ========================================= */
 
 :root {
   font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-  color: #20242b;
-  background: #f5f6f8;
+
+  color: #202b3c;
+  background: #f2f4f6;
+
   font-synthesis: none;
   text-rendering: optimizeLegibility;
-  --ink: #20242b;
-  --muted: #68717e;
-  --line: #e3e7ed;
+
+  --navy: #172b4d;
+  --navy-dark: #142541;
+
+  --green: #188653;
+  --green-hover: #126c42;
+
+  --blue: #9bc8e8;
+
+  --ink: #202b3c;
+  --muted: #687586;
+
+  --line: #e1e6eb;
   --surface: #ffffff;
-  --accent: #334155;
-  --accent-hover: #1e293b;
-  --soft: #eef2f6;
+  --background: #f2f4f6;
+
   --danger: #b42318;
-  --success: #18794e;
-  --your-result: #18794e;
-  --session-average: #6478b9;
+  --success: #188653;
+
+  --your-result: #188653;
+  --session-average: #9bc8e8;
 }
+
+
+/* =========================================
+   GLOBAL RESET
+   ========================================= */
 
 * {
   box-sizing: border-box;
 }
 
+html {
+  min-height: 100%;
+}
+
 body {
   margin: 0;
   min-height: 100vh;
+
   color: var(--ink);
-  background: #f5f6f8;
+  background: var(--background);
+
   font-size: 15px;
   line-height: 1.6;
 }
@@ -47,11 +71,6 @@ button:disabled {
   opacity: 0.6;
 }
 
-a {
-  color: inherit;
-  text-decoration: none;
-}
-
 h1,
 h2,
 h3,
@@ -59,250 +78,373 @@ p {
   margin-top: 0;
 }
 
-h1 {
-  margin-bottom: 12px;
-  font-size: clamp(1.8rem, 4vw, 2.4rem);
-  line-height: 1.2;
-  letter-spacing: -0.04em;
-}
-
-h2 {
-  margin-bottom: 12px;
-  font-size: 1.3rem;
-  line-height: 1.35;
-  letter-spacing: -0.02em;
-}
-
-h3 {
-  margin-bottom: 8px;
-  font-size: 1rem;
-}
-
 .hidden {
   display: none !important;
+}
+
+
+/* =========================================
+   PARTICIPANT PAGE LAYOUT
+   ========================================= */
+
+.participant-body {
+  display: flex;
+  min-height: 100vh;
+  flex-direction: column;
+
+  background: var(--background);
+
+  transition: background 0.25s ease;
+}
+
+.participant-container {
+  display: flex;
+
+  width: 100%;
+  max-width: 620px;
+
+  min-height: 100vh;
+
+  flex: 1;
+  flex-direction: column;
+  justify-content: center;
+
+  gap: 24px;
+
+  margin: 0 auto;
+  padding: 36px 20px;
+}
+
+.participant-container > section {
+  width: 100%;
+}
+
+
+/* =========================================
+   SURVEY CARD
+   ========================================= */
+
+.survey-card {
+  width: 100%;
+
+  padding: clamp(26px, 5vw, 40px);
+
+  border: 1px solid #e8ebef;
+  border-radius: 18px;
+
+  background: #ffffff;
+
+  box-shadow:
+    0 8px 30px rgb(23 43 77 / 6%);
+}
+
+
+/* =========================================
+   INNOPOLL BRANDING
+   ========================================= */
+
+.brand-header {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  gap: 9px;
+
+  margin-bottom: 30px;
+}
+
+.brand-mark {
+  display: grid;
+
+  width: 30px;
+  height: 30px;
+
+  place-items: center;
+
+  border-radius: 8px;
+
+  background: var(--green);
+  color: #ffffff;
+
+  font-size: 17px;
+  font-weight: 850;
+}
+
+.brand-name {
+  color: var(--green);
+
+  font-size: 1rem;
+  font-weight: 850;
+
+  letter-spacing: 0.12em;
+}
+
+
+/* =========================================
+   TYPOGRAPHY
+   ========================================= */
+
+.display-title,
+.category-title {
+  color: var(--navy);
+
+  font-weight: 800;
+  letter-spacing: 0.025em;
+  line-height: 1.3;
+
+  text-transform: uppercase;
+}
+
+.display-title {
+  margin-bottom: 16px;
+
+  font-size: clamp(1.6rem, 4vw, 2rem);
+}
+
+.page-title {
+  text-align: center;
+}
+
+.category-title {
+  margin-bottom: 16px;
+
+  font-size: clamp(1.45rem, 3.5vw, 1.8rem);
+  text-align: center;
+}
+
+.section-label {
+  margin-bottom: 12px;
+
+  color: var(--green);
+
+  font-size: 0.72rem;
+  font-weight: 800;
+
+  letter-spacing: 0.14em;
+  text-align: center;
+  text-transform: uppercase;
 }
 
 .muted {
   color: var(--muted);
 }
 
-.small-text {
-  font-size: 0.85rem;
+
+/* =========================================
+   WELCOME SCREEN
+   ========================================= */
+
+.welcome-description {
+  margin-bottom: 28px;
+
+  color: var(--muted);
+
+  font-size: 0.97rem;
+  line-height: 1.8;
+
+  text-align: center;
 }
 
-.eyebrow {
-  margin-bottom: 10px;
-  color: #64748b;
-  font-size: 0.72rem;
-  font-weight: 750;
-  letter-spacing: 0.12em;
+
+/* =========================================
+   CATEGORY INTRODUCTION
+   ========================================= */
+
+.category-intro-text {
+  margin: 0 0 30px;
+
+  color: var(--muted);
+
+  font-size: 0.97rem;
+  line-height: 1.85;
 }
 
-.brand-header {
-  display: inline-flex;
-  align-items: center;
-  gap: 10px;
-  color: var(--ink);
-  font-size: 1rem;
-  font-weight: 750;
-  letter-spacing: -0.02em;
-}
 
-.brand-mark {
-  display: grid;
-  width: 34px;
-  height: 34px;
-  place-items: center;
-  border-radius: 10px;
-  background: var(--accent);
-  color: white;
-  font-size: 1.1rem;
-  font-weight: 800;
-}
-
-.primary-button,
-.secondary-button {
-  display: inline-flex;
-  min-height: 44px;
-  align-items: center;
-  justify-content: center;
-  padding: 11px 16px;
-  border: 1px solid transparent;
-  border-radius: 10px;
-  font-size: 0.93rem;
-  font-weight: 650;
-  transition: background 0.15s ease, border-color 0.15s ease;
-}
+/* =========================================
+   BUTTONS
+   ========================================= */
 
 .primary-button {
-  background: var(--accent);
-  color: white;
+  display: inline-flex;
+
+  min-height: 48px;
+
+  align-items: center;
+  justify-content: center;
+
+  padding: 12px 20px;
+
+  border: 1px solid var(--green);
+  border-radius: 9px;
+
+  background: var(--green);
+  color: #ffffff;
+
+  font-size: 0.92rem;
+  font-weight: 700;
+
+  transition:
+    background 0.18s ease,
+    border-color 0.18s ease,
+    transform 0.18s ease;
 }
 
 .primary-button:hover {
-  background: var(--accent-hover);
+  border-color: var(--green-hover);
+  background: var(--green-hover);
 }
 
-.secondary-button {
-  border-color: var(--line);
-  background: white;
-  color: var(--ink);
+.primary-button:active {
+  transform: scale(0.99);
 }
 
-.secondary-button:hover {
-  background: #f8fafc;
-  border-color: #cbd5e1;
+.primary-button:focus-visible {
+  outline: 3px solid rgb(24 134 83 / 25%);
+  outline-offset: 3px;
 }
 
 .full-width {
   width: 100%;
 }
 
-.survey-card {
-  padding: clamp(22px, 5vw, 36px);
-  border: 1px solid var(--line);
-  border-radius: 18px;
-  background: var(--surface);
-  box-shadow: 0 8px 28px rgb(15 23 42 / 4%);
-}
+
+/* =========================================
+   ERROR MESSAGES
+   ========================================= */
 
 .error-message {
-  min-height: 0;
-  margin: 8px 0;
+  margin: 10px 0 0;
+
   color: var(--danger);
-  font-size: 0.88rem;
+
+  font-size: 0.85rem;
+  line-height: 1.5;
 }
 
 .error-message:empty {
   display: none;
 }
 
-/* Participant layout */
 
-.participant-body {
+/* =========================================
+   QUESTION HEADER
+   ========================================= */
+
+.question-header {
   display: flex;
-  min-height: 100vh;
-  flex-direction: column;
-}
 
-.participant-container {
-  display: flex;
-  width: 100%;
-  max-width: 620px;
-  flex: 1;
-  flex-direction: column;
-  justify-content: center;
-  gap: 26px;
-  margin: 0 auto;
-  padding: 28px 20px;
-}
-
-.participant-container > .brand-header {
-  align-self: flex-start;
-}
-
-.participant-container .survey-card {
-  width: 100%;
-}
-
-.participant-container .muted {
-  line-height: 1.75;
-}
-
-.survey-footer {
-  color: #8a929d;
-  font-size: 0.78rem;
-  text-align: center;
-}
-
-/* Display titles share the Innopoll wordmark style */
-
-.display-title,
-.category-title {
-  font-family: "Arial Narrow", "Roboto Condensed", "Aptos Display", sans-serif;
-  font-weight: 800;
-  text-transform: uppercase;
-  letter-spacing: 0.045em;
-  line-height: 1.2;
-}
-
-.display-title {
-  margin-bottom: 16px;
-  font-size: clamp(1.65rem, 3.5vw, 2rem);
-}
-
-.category-title {
-  margin-bottom: 16px;
-  font-size: clamp(1.45rem, 3vw, 1.8rem);
-}
-
-/* Category introduction pages */
-
-.category-intro-text {
-  margin: 0 0 28px;
-  color: var(--muted);
-  font-size: 1rem;
-  line-height: 1.85;
-}
-
-/* Question progress */
-
-.question-topline {
-  display: flex;
   align-items: center;
   justify-content: space-between;
+
   gap: 12px;
+
+  margin-bottom: 4px;
 }
 
-.poll-wordmark {
-  color: var(--ink);
-  font-size: 0.85rem;
-  font-weight: 800;
-  letter-spacing: 0.07em;
+.question-header .brand-header {
+  justify-content: flex-start;
+  margin-bottom: 0;
 }
+
+.question-header .brand-mark {
+  width: 28px;
+  height: 28px;
+}
+
+.question-header .brand-name {
+  font-size: 0.88rem;
+}
+
+.progress-label {
+  color: var(--muted);
+
+  font-size: 0.82rem;
+  font-weight: 600;
+
+  white-space: nowrap;
+}
+
+
+/* =========================================
+   PROGRESS BAR
+   ========================================= */
 
 .progress-track {
   width: 100%;
   height: 5px;
-  margin: 4px 0 28px;
+
+  margin: 18px 0 30px;
+
   overflow: hidden;
+
   border-radius: 20px;
-  background: #e8edf2;
+
+  background: #e9edf1;
 }
 
 .progress-fill {
   width: 33.33%;
   height: 100%;
+
   border-radius: inherit;
-  background: var(--accent);
-  transition: width 0.2s ease;
+
+  background: var(--green);
+
+  transition: width 0.25s ease;
 }
+
+
+/* =========================================
+   QUESTION TEXT
+   ========================================= */
 
 .question-text {
-  margin: 0 0 18px;
-  font-size: 1.12rem;
-  line-height: 1.6;
+  margin-bottom: 24px;
+
+  color: var(--navy);
+
+  font-size: clamp(1.1rem, 3vw, 1.25rem);
+  font-weight: 750;
+
+  line-height: 1.55;
   letter-spacing: -0.015em;
+
+  text-align: center;
 }
 
-/* Definition dropdown */
+
+/* =========================================
+   VIEW DEFINITION DROPDOWN
+   ========================================= */
 
 .definition-dropdown {
-  margin: 0 0 24px;
-  border: 1px solid #d1d7df;
+  margin-bottom: 24px;
+
+  overflow: hidden;
+
+  border: 1px solid #e0e5ea;
   border-radius: 10px;
-  background: #f1f3f6;
+
+  background: #f2f4f6;
 }
 
 .definition-dropdown summary {
   display: flex;
-  min-height: 46px;
+
+  min-height: 48px;
+
   align-items: center;
   justify-content: space-between;
+
   gap: 12px;
-  padding: 11px 14px;
-  color: #626c79;
-  font-size: 0.85rem;
+
+  padding: 11px 15px;
+
+  color: #526174;
+
+  font-size: 0.87rem;
+  font-weight: 650;
+
   cursor: pointer;
   list-style: none;
 }
@@ -318,10 +460,14 @@ h3 {
 .definition-chevron {
   width: 9px;
   height: 9px;
+
   flex: 0 0 auto;
-  border-right: 1.5px solid currentColor;
-  border-bottom: 1.5px solid currentColor;
+
+  border-right: 1.7px solid currentColor;
+  border-bottom: 1.7px solid currentColor;
+
   transform: rotate(45deg) translateY(-2px);
+
   transition: transform 0.2s ease;
 }
 
@@ -329,115 +475,413 @@ h3 {
   transform: rotate(225deg) translateY(-2px);
 }
 
-.definition-text {
-  margin: 0;
-  padding: 0 14px 15px;
-  color: #626c79;
-  font-size: 0.85rem;
-  line-height: 1.75;
+.definition-content {
+  padding: 0 15px 14px;
 }
 
-/* Answer options */
+.definition-text {
+  margin: 0;
+
+  color: #667386;
+
+  font-size: 0.85rem;
+  line-height: 1.8;
+}
+
+
+/* =========================================
+   ANSWER OPTIONS
+   ========================================= */
 
 #answer-form {
-  margin-top: 0;
+  margin: 0;
 }
 
 .answer-options {
   display: grid;
-  gap: 10px;
-  margin-bottom: 18px;
-}
 
-#answer-form .answer-options {
-  margin-top: 0;
+  gap: 10px;
+
+  margin-bottom: 22px;
 }
 
 .answer-option {
+  position: relative;
+
   display: flex;
-  min-height: 50px;
+
+  min-height: 55px;
+
   align-items: center;
-  gap: 12px;
-  padding: 12px 14px;
-  border: 1px solid var(--line);
-  border-radius: 11px;
-  background: white;
+
+  gap: 13px;
+
+  padding: 12px 15px;
+
+  border: 1px solid #e0e5eb;
+  border-radius: 10px;
+
+  background: #ffffff;
+
   cursor: pointer;
-  transition: border-color 0.15s ease, background 0.15s ease;
+
+  transition:
+    border-color 0.18s ease,
+    background 0.18s ease,
+    box-shadow 0.18s ease;
+}
+
+.answer-option:hover {
+  border-color: #a8cdb8;
+  background: #fbfdfb;
 }
 
 .answer-option:has(input:checked) {
-  border-color: #64748b;
-  background: #f1f5f9;
+  border-color: var(--green);
+
+  background: #f1f8f4;
+
+  box-shadow: 0 0 0 1px var(--green);
 }
 
 .answer-option input {
-  width: 18px;
-  height: 18px;
+  position: absolute;
+
+  width: 1px;
+  height: 1px;
+
+  opacity: 0;
+}
+
+.custom-radio {
+  position: relative;
+
+  display: grid;
+
+  width: 19px;
+  height: 19px;
+
   flex: 0 0 auto;
-  accent-color: var(--accent);
+
+  place-items: center;
+
+  border: 1.6px solid #aeb8c4;
+  border-radius: 50%;
+
+  background: #ffffff;
+
+  transition:
+    border-color 0.18s ease,
+    background 0.18s ease;
 }
 
-/* Green final submission button */
-
-.primary-button.submit-button {
-  border-color: #18794e;
-  background: #18794e;
-  color: #ffffff;
+.answer-option:has(input:checked) .custom-radio {
+  border: 5px solid var(--green);
 }
 
-.primary-button.submit-button:hover {
-  border-color: #146c43;
-  background: #146c43;
+.answer-option:has(input:focus-visible) {
+  outline: 3px solid rgb(24 134 83 / 20%);
+  outline-offset: 3px;
 }
 
-.primary-button.submit-button:disabled {
-  background: #18794e;
+.answer-label {
+  color: #354256;
+
+  font-size: 0.91rem;
+  font-weight: 550;
 }
 
-/* Thank-you page */
+
+/* =========================================
+   THANK-YOU SCREEN
+   ========================================= */
 
 .success-icon {
   display: grid;
-  width: 52px;
-  height: 52px;
+
+  width: 58px;
+  height: 58px;
+
   place-items: center;
-  margin-bottom: 20px;
+
+  margin: 0 auto 22px;
+
   border-radius: 50%;
-  background: #e6f4ec;
-  color: var(--success);
-  font-size: 1.6rem;
-  font-weight: 800;
+
+  background: #e8f5ed;
+  color: var(--green);
+
+  font-size: 1.8rem;
+  font-weight: 850;
+}
+
+#success-screen {
+  text-align: center;
+}
+
+#success-screen .brand-header {
+  margin-bottom: 32px;
+}
+
+#success-screen .display-title {
+  text-align: center;
 }
 
 .success-message {
-  margin-bottom: 24px;
-  font-size: 1.05rem;
-  font-weight: 400;
+  margin-bottom: 28px;
+
+  color: var(--muted);
+
+  font-size: 1rem;
 }
 
-/* Poll results and legend */
 
-.results-legend {
+/* =========================================
+   RESULTS PAGE
+   ========================================= */
+
+body.results-mode {
+  background: var(--navy-dark);
+}
+
+body.results-mode .participant-container {
+  max-width: 620px;
+
+  justify-content: flex-start;
+
+  padding-top: 44px;
+  padding-bottom: 36px;
+}
+
+.results-page {
+  width: 100%;
+}
+
+.results-header {
+  margin-bottom: 28px;
+
+  text-align: center;
+}
+
+.results-eyebrow {
+  margin-bottom: 5px;
+
+  color: #a9c0d6;
+
+  font-size: 0.75rem;
+  font-weight: 750;
+
+  letter-spacing: 0.2em;
+}
+
+.results-main-title {
+  margin: 0;
+
+  color: #ffffff;
+
+  font-size: clamp(1.9rem, 5vw, 2.4rem);
+  font-weight: 800;
+
+  letter-spacing: -0.025em;
+  line-height: 1.25;
+}
+
+
+/* =========================================
+   RESULTS CARDS
+   ========================================= */
+
+.personal-results {
+  display: grid;
+
+  gap: 20px;
+}
+
+.category-result-card {
+  width: 100%;
+  min-width: 0;
+
+  padding: 24px 26px;
+
+  border: none;
+  border-radius: 16px;
+
+  background: #ffffff;
+
+  box-shadow: 0 8px 25px rgb(0 0 0 / 8%);
+}
+
+.category-result-title {
+  margin: 0 0 18px;
+
+  color: var(--navy);
+
+  font-size: 1rem;
+  font-weight: 850;
+
+  letter-spacing: 0.09em;
+  line-height: 1.4;
+
+  text-align: center;
+  text-transform: uppercase;
+}
+
+
+/* =========================================
+   CONCENTRIC DOUGHNUT CHART
+   ========================================= */
+
+.result-chart-wrapper {
   display: flex;
-  flex-wrap: wrap;
-  gap: 12px 22px;
-  margin: 18px 0 24px;
+
+  justify-content: center;
+
+  margin: 4px 0 18px;
 }
 
-.legend-item {
-  display: inline-flex;
+.donut-chart {
+  position: relative;
+
+  display: grid;
+
+  width: 180px;
+  height: 180px;
+
+  flex: 0 0 auto;
+
+  place-items: center;
+}
+
+.donut-svg {
+  display: block;
+
+  width: 180px;
+  height: 180px;
+
+  overflow: visible;
+
+  transform: rotate(-90deg);
+}
+
+.donut-track,
+.donut-value {
+  fill: none;
+  stroke-width: 10;
+}
+
+.donut-track {
+  stroke: #edf0f3;
+}
+
+.donut-value {
+  stroke-linecap: round;
+
+  transition: stroke-dashoffset 0.6s ease;
+}
+
+/* Outer ring: Session average */
+
+.outer-value {
+  stroke: var(--session-average);
+}
+
+/* Inner ring: Your result */
+
+.inner-value {
+  stroke: var(--your-result);
+}
+
+
+/* =========================================
+   CENTRE SCORE
+   ========================================= */
+
+.donut-centre {
+  position: absolute;
+
+  display: flex;
+
+  width: 95px;
+
+  flex-direction: column;
   align-items: center;
-  gap: 8px;
-  color: #626c79;
-  font-size: 0.82rem;
+  justify-content: center;
+
+  pointer-events: none;
+}
+
+.donut-percentage {
+  color: var(--your-result);
+
+  font-size: 1.55rem;
+  font-weight: 850;
+
+  line-height: 1.2;
+
+  font-variant-numeric: tabular-nums;
+  text-align: center;
+}
+
+.donut-caption {
+  margin-top: 4px;
+
+  color: #8792a0;
+
+  font-size: 0.75rem;
+  font-weight: 550;
+
+  line-height: 1.3;
+  text-align: center;
+}
+
+
+/* =========================================
+   RESULTS LEGEND
+   ========================================= */
+
+.result-legend {
+  display: grid;
+
+  gap: 10px;
+
+  width: 100%;
+  max-width: 310px;
+
+  margin: 0 auto;
+  padding-top: 15px;
+
+  border-top: 1px solid #edf0f3;
+}
+
+.result-legend-row {
+  display: flex;
+
+  align-items: center;
+  justify-content: space-between;
+
+  gap: 12px;
+
+  color: #586579;
+
+  font-size: 0.84rem;
+}
+
+.result-legend-label {
+  display: flex;
+
+  align-items: center;
+
+  gap: 9px;
 }
 
 .legend-dot {
   display: inline-block;
+
   width: 10px;
   height: 10px;
+
   flex: 0 0 auto;
+
   border-radius: 50%;
 }
 
@@ -449,620 +893,224 @@ h3 {
   background: var(--session-average);
 }
 
-.personal-results {
-  display: grid;
-  gap: 18px;
-}
+.result-legend-value {
+  color: var(--navy);
 
-.category-result-card {
-  min-width: 0;
-  padding: 20px;
-  border: 1px solid var(--line);
-  border-radius: 14px;
-  background: #ffffff;
-}
-
-.category-result-title {
-  margin-bottom: 20px;
-  font-family: "Arial Narrow", "Roboto Condensed", "Aptos Display", sans-serif;
-  font-size: 1rem;
-  font-weight: 800;
-  letter-spacing: 0.035em;
-  line-height: 1.4;
-  text-transform: uppercase;
-}
-
-/* Two donut charts per category */
-
-.donut-pair {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  align-items: start;
-  justify-items: center;
-  gap: 16px;
-}
-
-.donut {
-  position: relative;
-  display: flex;
-  width: 100%;
-  max-width: 150px;
-  flex-direction: column;
-  align-items: center;
-  justify-content: flex-start;
-  padding-top: 2px;
-}
-
-.donut-svg {
-  display: block;
-  width: 100%;
-  max-width: 132px;
-  height: auto;
-  overflow: visible;
-  transform: rotate(-90deg);
-}
-
-.donut-track,
-.donut-value {
-  fill: none;
-  stroke-width: 10;
-}
-
-.donut-track {
-  stroke: #e9edf2;
-}
-
-.donut-value {
-  stroke-linecap: round;
-  transition: stroke-dashoffset 0.5s ease;
-}
-
-.your-result-donut .donut-value {
-  stroke: var(--your-result);
-}
-
-.session-average-donut .donut-value {
-  stroke: var(--session-average);
-}
-
-/* Percentage displayed in the centre of each donut */
-
-.donut-percentage {
-  position: absolute;
-  top: 43px;
-  left: 50%;
-  width: 90px;
-  color: var(--ink);
-  font-size: 1.35rem;
-  font-weight: 750;
-  line-height: 1.3;
-  text-align: center;
-  transform: translateX(-50%);
-  pointer-events: none;
-}
-
-.donut-caption {
-  display: block;
-  margin-top: 8px;
-  color: #87909d;
-  font-size: 0.8rem;
-  line-height: 1.4;
-  text-align: center;
-}
-
-.session-average-unavailable {
-  align-self: center;
-  margin: 0;
-  color: #87909d;
-  font-size: 0.8rem;
-  text-align: center;
-}
-
-/* Facilitator dashboard */
-
-.dashboard-body {
-  min-height: 100vh;
-}
-
-.dashboard-header {
-  display: flex;
-  min-height: 70px;
-  align-items: center;
-  justify-content: space-between;
-  gap: 16px;
-  padding: 14px clamp(18px, 4vw, 52px);
-  border-bottom: 1px solid var(--line);
-  background: white;
-}
-
-.header-actions {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-}
-
-.dashboard-container {
-  width: 100%;
-  max-width: 1120px;
-  margin: 0 auto;
-  padding: 36px 22px 60px;
-}
-
-.dashboard-intro {
-  margin-bottom: 24px;
-}
-
-.login-card {
-  width: 100%;
-  max-width: 470px;
-  margin: 36px auto;
-}
-
-.stack-form {
-  display: grid;
-  gap: 10px;
-}
-
-.stack-form label {
-  margin-top: 8px;
   font-size: 0.88rem;
-  font-weight: 650;
-}
-
-.stack-form input {
-  width: 100%;
-  min-height: 45px;
-  padding: 11px 12px;
-  border: 1px solid #d7dde5;
-  border-radius: 9px;
-  outline: none;
-  background: white;
-}
-
-.stack-form input:focus {
-  border-color: #64748b;
-  box-shadow: 0 0 0 3px rgb(100 116 139 / 14%);
-}
-
-.sessions-section {
-  margin-top: 34px;
-}
-
-.section-heading {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 16px;
-  margin-bottom: 16px;
-}
-
-.sessions-list {
-  display: grid;
-  gap: 12px;
-}
-
-.session-list-card {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 18px;
-  padding: 18px;
-  border: 1px solid var(--line);
-  border-radius: 14px;
-  background: white;
-}
-
-.session-list-info h3 {
-  overflow-wrap: anywhere;
-}
-
-.session-list-info p {
-  margin-bottom: 8px;
-}
-
-.status-pill {
-  display: inline-block;
-  padding: 3px 9px;
-  border: 1px solid var(--line);
-  border-radius: 99px;
-  color: var(--muted);
-  font-size: 0.74rem;
-  font-weight: 650;
-}
-
-.status-pill.active {
-  border-color: #b7e4cb;
-  background: #ecfdf3;
-  color: #18794e;
-}
-
-#session-detail {
-  margin-top: 34px;
-  scroll-margin-top: 20px;
-}
-
-.session-tools {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(180px, 0.7fr);
-  gap: 18px;
-  margin: 26px 0;
-}
-
-.qr-panel,
-.response-summary {
-  padding: 20px;
-  border: 1px solid var(--line);
-  border-radius: 14px;
-  background: #fafbfc;
-}
-
-.qr-code {
-  display: grid;
-  min-height: 210px;
-  place-items: center;
-  margin: 16px 0;
-  padding: 8px;
-  border-radius: 10px;
-  background: white;
-}
-
-.qr-code img,
-.qr-code canvas {
-  display: block;
-  max-width: 100%;
-  height: auto;
-}
-
-.url-text {
-  overflow-wrap: anywhere;
-  color: var(--muted);
-  font-size: 0.8rem;
-}
-
-.qr-panel .secondary-button {
-  margin-top: 8px;
-}
-
-.response-count {
-  margin: 0 0 6px;
-  font-size: 3rem;
   font-weight: 750;
-  letter-spacing: -0.06em;
+
+  font-variant-numeric: tabular-nums;
 }
 
-.results-grid {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 16px;
-  margin-top: 20px;
-}
 
-.chart-card {
-  min-width: 0;
-  padding: 18px;
-  border: 1px solid var(--line);
-  border-radius: 14px;
-  background: white;
+/* =========================================
+   RESULTS LOADING AND ERRORS
+   ========================================= */
+
+.results-loading {
+  color: #ffffff;
+
+  font-size: 0.9rem;
   text-align: center;
 }
 
-.chart-card h3,
-.chart-card p {
-  text-align: left;
+.results-error {
+  margin: 16px 0 0;
+
+  color: #ffc7c7;
+
+  font-size: 0.88rem;
+  text-align: center;
 }
 
-.chart-wrap {
-  width: 100%;
-  max-width: 220px;
-  margin: 18px auto 6px;
+.results-error:empty {
+  display: none;
 }
 
-.chart-score {
-  margin: 12px 0;
-  font-size: 1.35rem;
-  font-weight: 750;
-  letter-spacing: -0.03em;
-  text-align: center !important;
+
+/* =========================================
+   FOOTER
+   ========================================= */
+
+.survey-footer {
+  margin-top: auto;
+
+  color: #8994a2;
+
+  font-size: 0.76rem;
+  text-align: center;
 }
 
-.chart-card .secondary-button {
-  width: 100%;
+body.results-mode .survey-footer {
+  color: #a8b8cc;
 }
 
-#results-message {
-  margin-top: 18px;
-}
 
-#export-all-button,
-#toggle-session-button {
-  margin-top: 10px;
-  margin-right: 8px;
-}
-
-/* Responsive layouts */
+/* =========================================
+   RESPONSIVE: TABLET
+   ========================================= */
 
 @media (max-width: 760px) {
-  .dashboard-container {
-    padding: 24px 14px 40px;
+
+  .participant-container {
+    padding: 30px 18px;
   }
 
-  .results-grid {
-    grid-template-columns: 1fr;
+  body.results-mode .participant-container {
+    padding-top: 34px;
   }
 
-  .chart-card {
-    padding: 22px;
-  }
-
-  .chart-wrap {
-    max-width: 210px;
-  }
-
-  .session-tools {
-    grid-template-columns: 1fr;
-  }
 }
 
+
+/* =========================================
+   RESPONSIVE: MOBILE
+   ========================================= */
+
 @media (max-width: 480px) {
+
   body {
     font-size: 14px;
   }
 
   .participant-container {
-    justify-content: center;
-    align-items: center;
     min-height: 100vh;
+
+    justify-content: center;
+
+    gap: 18px;
+
     padding: 22px 14px;
   }
 
-  .participant-container .survey-card {
-    width: 100%;
-    padding: 22px 18px;
+  .survey-card {
+    padding: 25px 19px;
+
+    border-radius: 15px;
   }
 
-  .category-intro-text {
-    font-size: 0.95rem;
+  .brand-header {
+    margin-bottom: 25px;
   }
 
-  .definition-dropdown summary {
-    min-height: 44px;
+  .brand-mark {
+    width: 27px;
+    height: 27px;
+
+    font-size: 15px;
   }
 
-  .donut-pair {
-    gap: 8px;
+  .brand-name {
+    font-size: 0.9rem;
   }
 
-  .donut {
-    max-width: 135px;
-  }
-
-  .donut-percentage {
-    top: 39px;
-    font-size: 1.2rem;
-  }
-
-  .donut-caption {
-    font-size: 0.76rem;
-  }
-
-  .category-result-card {
-    padding: 16px 12px;
-  }
-
-  .dashboard-header {
-    align-items: flex-start;
-    padding: 12px 14px;
-  }
-
-  .header-actions {
-    flex-direction: column;
-    align-items: flex-end;
-    gap: 6px;
-  }
-
-  .session-list-card {
-    align-items: flex-start;
-    flex-direction: column;
-  }
-
-  .session-list-card .secondary-button {
-    width: 100%;
-  }
-
-  .section-heading {
-    align-items: flex-start;
-  }
-
-  #export-all-button,
-  #toggle-session-button {
-    width: 100%;
-    margin-right: 0;
-  }
-}
-
-/* Landing page and category titles */
-.page-title,
-.category-title {
-  font-family: "Arial Narrow", "Roboto Condensed", "Aptos Display", sans-serif;
-  color: #20242b;
-  font-size: clamp(1.65rem, 3.5vw, 2rem);
-  font-weight: 800;
-  letter-spacing: 0.045em;
-  line-height: 1.2;
-  text-transform: uppercase;
-}
-
-/* Keep category titles consistent with the landing page */
-.category-title {
-  margin-bottom: 16px;
-}
-
-/* Results donut: bolder, centred percentage */
-.donut-percentage {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 1.4rem;
-  font-weight: 850;
-  line-height: 1;
-  text-align: center;
-  font-variant-numeric: tabular-nums;
-}
-
-/* Thicker donut ring */
-.donut-track,
-.donut-value {
-  stroke-width: 13;
-}
-
-/* Reduce space between the donut and its caption */
-.donut-caption {
-  margin-top: 0;
-  color: #87909d;
-  font-size: 0.8rem;
-  line-height: 1.3;
-  text-align: center;
-}
-
-/* Maintain percentage alignment on smaller screens */
-@media (max-width: 480px) {
-  .donut-percentage {
-    top: 39px;
-    font-size: 1.25rem;
-    font-weight: 850;
-  }
-
-  .donut-caption {
-    margin-top: 0;
-    font-size: 0.76rem;
-  }
-}
-
-/* =========================================
-   CONSISTENT TITLE FONT
-   Use the original eyebrow font style,
-   enlarged for page and category titles.
-   ========================================= */
-
-.page-title,
-.category-title,
-.category-result-title {
-  font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-  color: #20242b;
-  font-weight: 800;
-  letter-spacing: 0.12em;
-  line-height: 1.3;
-  text-transform: uppercase;
-}
-
-.page-title {
-  font-size: clamp(1.5rem, 4vw, 1.9rem);
-  margin-bottom: 16px;
-}
-
-.category-title {
-  font-size: clamp(1.4rem, 3.5vw, 1.8rem);
-  margin-bottom: 16px;
-}
-
-.category-result-title {
-  font-size: 1rem;
-  margin-bottom: 20px;
-}
-
-/* =========================================
-   DONUT PERCENTAGE POSITIONING
-   Centre the percentage within the circle.
-   ========================================= */
-
-.donut {
-  position: relative;
-  display: flex;
-  align-items: center;
-}
-
-.donut-svg {
-  display: block;
-  width: 100%;
-  max-width: 132px;
-  height: auto;
-}
-
-.donut-percentage {
-  position: absolute;
-  top: 2px;
-  left: 0;
-  right: 0;
-  bottom: auto;
-  width: 100%;
-  height: 132px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 1px;
-  transform: none;
-  pointer-events: none;
-  color: inherit;
-  font-size: 1.5rem;
-  font-weight: 850;
-  line-height: 1;
-  text-align: center;
-  font-variant-numeric: tabular-nums;
-}
-
-/* Match each percentage number to its donut colour */
-.your-result-donut .donut-percentage {
-  color: var(--your-result);
-}
-
-.session-average-donut .donut-percentage {
-  color: var(--session-average);
-}
-
-/* Style the percent sign separately */
-.donut-percent-sign {
-  align-self: center;
-  margin-top: 3px;
-  color: #87909d;
-  font-size: 0.78em;
-  font-weight: 600;
-}
-
-/* Thicker donut rings */
-.donut-track,
-.donut-value {
-  stroke-width: 13;
-}
-
-/* Reduce the space between the donut and its caption */
-.donut-caption {
-  margin-top: 0;
-  color: #87909d;
-  font-size: 0.8rem;
-  line-height: 1.3;
-  text-align: center;
-}
-
-@media (max-width: 480px) {
-  .page-title {
-    font-size: 1.5rem;
+  .display-title {
+    font-size: 1.55rem;
   }
 
   .category-title {
     font-size: 1.4rem;
   }
 
+  .category-intro-text {
+    font-size: 0.92rem;
+    line-height: 1.8;
+  }
+
+  .question-header {
+    gap: 8px;
+  }
+
+  .question-text {
+    font-size: 1.08rem;
+  }
+
+  .answer-option {
+    min-height: 52px;
+
+    padding: 11px 12px;
+  }
+
+  .answer-label {
+    font-size: 0.87rem;
+  }
+
+  .definition-dropdown summary {
+    min-height: 45px;
+  }
+
+  .definition-text {
+    font-size: 0.82rem;
+  }
+
+  body.results-mode .participant-container {
+    justify-content: flex-start;
+
+    padding: 30px 14px 24px;
+  }
+
+  .results-header {
+    margin-bottom: 22px;
+  }
+
+  .results-main-title {
+    font-size: 2rem;
+  }
+
+  .personal-results {
+    gap: 16px;
+  }
+
+  .category-result-card {
+    padding: 21px 17px;
+
+    border-radius: 14px;
+  }
+
+  .category-result-title {
+    font-size: 0.92rem;
+
+    letter-spacing: 0.075em;
+  }
+
+  .donut-chart,
+  .donut-svg {
+    width: 170px;
+    height: 170px;
+  }
+
   .donut-percentage {
-    height: 100%;
-    font-size: 1.3rem;
+    font-size: 1.45rem;
   }
 
-  .donut-percent-sign {
-    font-size: 0.78em;
+  .result-legend {
+    max-width: 280px;
   }
 
-  .donut-caption {
-    margin-top: 0;
-    font-size: 0.76rem;
+  .result-legend-row {
+    font-size: 0.81rem;
   }
+
+  .survey-footer {
+    padding-bottom: 4px;
+  }
+
+}
+
+
+/* =========================================
+   ACCESSIBILITY
+   ========================================= */
+
+@media (prefers-reduced-motion: reduce) {
+
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+  }
+
 }
