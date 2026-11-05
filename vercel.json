@@ -1,0 +1,17 @@
+
+{
+  "rewrites": [
+    {
+      "source": "/",
+      "destination": "/participant-site/index.html"
+    },
+    {
+      "source": "/facilitator",
+      "destination": "/facilitator-site/index.html"
+    },
+    {
+      "source": "/facilitator/:path*",
+      "destination": "/facilitator-site/:path*"
+    }
+  ]
+}
