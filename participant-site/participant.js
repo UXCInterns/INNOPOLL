@@ -116,17 +116,34 @@ function generateBrowserToken() {
   );
 }
 
+/*
+  Unfinished attempts receive a fresh token whenever the page loads.
+
+  Only a completed attempt has its token saved in sessionStorage.
+  This allows a completed participant to refresh the page and still
+  access their completed submission and personal results.
+*/
+
 function getBrowserToken(id) {
-  const storageKey = `innopoll_browser_token_${id}`;
+  const storageKey = `innopoll_completed_token_${id}`;
 
-  let token = localStorage.getItem(storageKey);
+  const completedToken = sessionStorage.getItem(storageKey);
 
-  if (!token) {
-    token = generateBrowserToken();
-    localStorage.setItem(storageKey, token);
+  if (completedToken) {
+    return completedToken;
   }
 
-  return token;
+  return generateBrowserToken();
+}
+
+function rememberCompletedToken() {
+  if (!sessionId || !browserToken) {
+    return;
+  }
+
+  const storageKey = `innopoll_completed_token_${sessionId}`;
+
+  sessionStorage.setItem(storageKey, browserToken);
 }
 
 /* ============================================================
@@ -207,7 +224,7 @@ async function loadSavedAnswers() {
     console.error("Unable to retrieve saved answers:", error);
 
     throw new Error(
-      "Unable to restore your previous answers. Please try again."
+      "Unable to retrieve your submitted answers. Please try again."
     );
   }
 
@@ -219,7 +236,6 @@ async function loadSavedAnswers() {
     answers[answer.question_id] = Number(answer.score);
   });
 
-  // Resume at the first unanswered question.
   const firstUnanswered = questions.findIndex(
     (question) => answers[question.id] === undefined
   );
@@ -229,6 +245,18 @@ async function loadSavedAnswers() {
   } else {
     currentQuestion = firstUnanswered;
   }
+}
+
+/* ============================================================
+   CLEAR CURRENT ATTEMPT ANSWERS
+   ============================================================ */
+
+function clearCurrentAnswers() {
+  Object.keys(answers).forEach((key) => {
+    delete answers[key];
+  });
+
+  currentQuestion = 0;
 }
 
 /* ============================================================
@@ -412,6 +440,9 @@ async function completeSurvey() {
 
   isCompleted = true;
 
+  // Keep the completed attempt recognisable after a page refresh.
+  rememberCompletedToken();
+
   return data;
 }
 
@@ -440,21 +471,42 @@ document.getElementById("join-button").addEventListener(
     button.textContent = "Checking survey...";
 
     try {
+      /*
+        A fresh token is generated for an unfinished attempt.
+        A completed token is reused only when one was saved after
+        a successful submission in this browser tab.
+      */
+
       browserToken = getBrowserToken(sessionId);
+
+      // Reset in-memory state before joining.
+      participantId = null;
+      participantCode = null;
+      isCompleted = false;
+
+      clearCurrentAnswers();
 
       await startOrResumeParticipant();
 
       await loadQuestions();
 
-      await loadSavedAnswers();
-
       if (isCompleted) {
+        // Restore answers only for an already completed submission.
+        await loadSavedAnswers();
+
         document.querySelector(".success-message").textContent =
           "You have already completed this survey.";
 
         showScreen(successScreen);
         return;
       }
+
+      /*
+        This is a new attempt.
+        Do not restore answers from any abandoned attempt.
+      */
+
+      clearCurrentAnswers();
 
       document.querySelector(".success-message").textContent =
         "Response submitted successfully";
