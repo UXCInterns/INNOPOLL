@@ -1,17 +1,21 @@
 
 {
-  "rewrites": [
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "routes": [
     {
-      "source": "/",
-      "destination": "/participant-site/index.html"
+      "src": "^/$",
+      "dest": "/participant-site/index.html"
     },
     {
-      "source": "/facilitator",
-      "destination": "/facilitator-site/index.html"
+      "src": "^/facilitator$",
+      "status": 308,
+      "headers": {
+        "Location": "/facilitator/"
+      }
     },
     {
-      "source": "/facilitator/:path*",
-      "destination": "/facilitator-site/:path*"
+      "src": "^/facilitator/(.*)$",
+      "dest": "/facilitator-site/$1"
     }
   ]
 }
