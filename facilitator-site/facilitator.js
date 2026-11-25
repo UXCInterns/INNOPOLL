@@ -53,29 +53,31 @@ const categorySettings = {
   }
 };
 
+
 const DEFAULT_QUESTIONS = [
   {
     category: "culture",
     title: "Culture",
-    question_text: "Our organisation encourages people to experiment with new ideas and approaches.",
-    definition: "Innovation culture refers to the shared values, behaviours and environment that encourage people to explore, experiment and contribute new ideas.",
-    statements: ["People feel comfortable sharing new ideas.", "Different perspectives are welcomed.", "Experimentation and learning from mistakes are encouraged."]
+    question_text: "Does your company embrace discussions on experimentation to generate and test new ideas, concepts, business models, etc. to innovate?",
+    definition: "An Innovation Culture fosters an atmosphere where employees feel empowered to take risks, collaborate, and continuously seek out opportunities for improvement and innovation in products, processes, or services. This is essential to staying competitive in today's rapidly changing landscape.",
+    statements: []
   },
   {
     category: "practices",
     title: "Practices",
-    question_text: "Our organisation has effective processes for turning ideas into practical solutions.",
-    definition: "Innovation practices refer to the methods, processes and activities used to identify opportunities, develop ideas and implement solutions.",
-    statements: ["We actively identify opportunities for improvement.", "We use structured methods to develop and test ideas.", "We review outcomes and improve our approaches."]
+    question_text: "How often does your company use business models, startup methodologies, design thinking or any other innovation tools and methods?",
+    definition: "Innovation Practices often involve fostering a culture of innovation, conducting research and development, leveraging on technology and tools and processes for collaboration to thrive in an ever changing environmental and economic uncertainty to achieve sustainable advancements for all users.",
+    statements: []
   },
   {
     category: "leadership",
     title: "Leadership",
-    question_text: "Leaders in our organisation actively support and enable innovation.",
-    definition: "Innovation leadership refers to how leaders provide direction, resources, encouragement and support for innovation.",
-    statements: ["Leaders communicate a clear direction for innovation.", "Leaders provide resources and support for new ideas.", "Leaders encourage collaboration and shared ownership."]
+    question_text: "How often do leaders in your organisation encourage the need for innovation and provide the resources to support innovation efforts?",
+    definition: "Innovation leadership inspires organisations to foster a creative culture. They do not only champion and support creative thinking but also provide strategic direction, allocate resources, and create an environment where experimentation and calculated risk-taking are encouraged.",
+    statements: []
   }
 ];
+
 
 // =========================================================
 // GENERAL HELPERS
