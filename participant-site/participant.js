@@ -610,6 +610,32 @@ function scoreToPercentage(score) {
   return ((Number(score) - 1) / 4) * 100;
 }
 
+async function loadSessionAverages() {
+  const { data, error } = await supabaseClient.rpc(
+    "get_session_question_averages",
+    {
+      p_session_id: sessionId
+    }
+  );
+
+  if (error) {
+    console.error("Unable to load session averages:", error);
+    throw new Error("Unable to load session averages.");
+  }
+
+  const averages = {};
+
+  (data || []).forEach((item) => {
+    averages[item.question_id] = {
+      averageScore: Number(item.average_score),
+      participantCount: Number(item.participant_count)
+    };
+  });
+
+  return averages;
+}
+
+
 /* ============================================================
    RESULTS: CHART
    ============================================================ */
@@ -713,6 +739,7 @@ function createLegendRow(label, percentage, dotClass) {
    DISPLAY PERSONAL RESULTS
    ============================================================ */
 
+
 async function renderPersonalResults() {
   const resultsContainer = document.getElementById("results-content");
 
@@ -726,8 +753,11 @@ async function renderPersonalResults() {
   viewResultsButton.textContent = "Loading results...";
 
   try {
-    // Refresh answers from Supabase before displaying results.
+    // Refresh personal answers.
     await loadSavedAnswers();
+
+    // Retrieve averages from all completed participants.
+    const sessionAverages = await loadSessionAverages();
 
     questions.forEach((item) => {
       const personalScore = answers[item.id];
@@ -755,6 +785,12 @@ async function renderPersonalResults() {
 
       const personalPercentage = scoreToPercentage(personalScore);
 
+      const sessionData = sessionAverages[item.id];
+
+      const sessionPercentage = sessionData
+        ? scoreToPercentage(sessionData.averageScore)
+        : null;
+
       const chart = createResultChart(personalScore);
 
       const legend = document.createElement("div");
@@ -768,12 +804,21 @@ async function renderPersonalResults() {
         ),
         createLegendRow(
           "Session Average",
-          null,
+          sessionPercentage,
           "session-average-dot"
         )
       );
 
-      card.append(chart, legend);
+      if (!sessionData || sessionData.participantCount < 2) {
+        const note = document.createElement("p");
+        note.className = "results-note";
+        note.textContent =
+          "Session average will be available when at least two participants have completed the survey.";
+
+        card.append(chart, legend, note);
+      } else {
+        card.append(chart, legend);
+      }
 
       resultsContainer.appendChild(card);
     });
