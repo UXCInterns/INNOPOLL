@@ -640,15 +640,21 @@ async function loadSessionAverages() {
    RESULTS: CHART
    ============================================================ */
 
-function createResultChart(personalScore) {
+
+function createResultChart(personalScore, sessionAverageScore = null) {
   const size = 160;
   const center = size / 2;
-  const radius = 55;
-  const circumference = 2 * Math.PI * radius;
-
-  const percentage = scoreToPercentage(personalScore);
-
   const svgNamespace = "http://www.w3.org/2000/svg";
+
+  const personalPercentage = scoreToPercentage(personalScore);
+
+  const hasSessionAverage =
+    sessionAverageScore !== null &&
+    sessionAverageScore !== undefined;
+
+  const sessionPercentage = hasSessionAverage
+    ? scoreToPercentage(sessionAverageScore)
+    : 0;
 
   const svg = document.createElementNS(svgNamespace, "svg");
 
@@ -658,16 +664,26 @@ function createResultChart(personalScore) {
 
   svg.setAttribute(
     "aria-label",
-    `Your score ${Math.round(percentage)} percent.`
+    `Your score ${personalPercentage} percent. ${
+      hasSessionAverage
+        ? `Session average ${sessionPercentage} percent.`
+        : "Session average unavailable."
+    }`
   );
 
-  function makeCircle(className, value) {
-    const circle = document.createElementNS(svgNamespace, "circle");
+  function makeCircle(className, radius, strokeWidth, value) {
+    const circle = document.createElementNS(
+      svgNamespace,
+      "circle"
+    );
+
+    const circumference = 2 * Math.PI * radius;
 
     circle.setAttribute("cx", center);
     circle.setAttribute("cy", center);
     circle.setAttribute("r", radius);
     circle.setAttribute("class", className);
+    circle.setAttribute("stroke-width", strokeWidth);
     circle.setAttribute("stroke-dasharray", circumference);
 
     circle.setAttribute(
@@ -678,9 +694,25 @@ function createResultChart(personalScore) {
     return circle;
   }
 
-  svg.appendChild(makeCircle("chart-track personal-track", 100));
+  // Outer ring: Session Average
+  svg.appendChild(
+    makeCircle("chart-track average-track", 68, 10, 100)
+  );
 
-  svg.appendChild(makeCircle("chart-value personal-value", percentage));
+  if (hasSessionAverage) {
+    svg.appendChild(
+      makeCircle("chart-value average-value", 68, 10, sessionPercentage)
+    );
+  }
+
+  // Inner ring: Your Result
+  svg.appendChild(
+    makeCircle("chart-track personal-track", 49, 11, 100)
+  );
+
+  svg.appendChild(
+    makeCircle("chart-value personal-value", 49, 11, personalPercentage)
+  );
 
   const wrapper = document.createElement("div");
   wrapper.className = "result-chart-wrapper";
@@ -690,7 +722,7 @@ function createResultChart(personalScore) {
 
   const percentageText = document.createElement("span");
   percentageText.className = "chart-percentage";
-  percentageText.textContent = `${Math.round(percentage)}%`;
+  percentageText.textContent = `${Math.round(personalPercentage)}%`;
 
   const scoreLabel = document.createElement("span");
   scoreLabel.className = "chart-score-label";
@@ -791,7 +823,10 @@ async function renderPersonalResults() {
         ? scoreToPercentage(sessionData.averageScore)
         : null;
 
-      const chart = createResultChart(personalScore);
+      const chart = createResultChart(
+        personalScore,
+        sessionData ? sessionData.averageScore : null
+      );
 
       const legend = document.createElement("div");
       legend.className = "result-legend";
