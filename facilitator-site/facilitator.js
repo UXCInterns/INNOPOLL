@@ -53,7 +53,6 @@ const categorySettings = {
   }
 };
 
-
 const DEFAULT_QUESTIONS = [
   {
     category: "culture",
@@ -77,7 +76,6 @@ const DEFAULT_QUESTIONS = [
     statements: []
   }
 ];
-
 
 // =========================================================
 // GENERAL HELPERS
@@ -1080,7 +1078,7 @@ function updateChartCentre(scoreElement, score) {
 }
 
 // =========================================================
-// RENDER DOUGHNUT CHARTS
+// RENDER ANALYTICS CHARTS
 // =========================================================
 
 function renderAnalyticsCharts() {
@@ -1091,6 +1089,7 @@ function renderAnalyticsCharts() {
     updateChartCentre($(settings.score), score);
 
     const canvas = $(settings.chart);
+    if (!canvas) return;
 
     if (charts[key]) {
       charts[key].destroy();
@@ -1114,8 +1113,11 @@ function renderAnalyticsCharts() {
 
           borderWidth: 0,
           borderColor: "transparent",
-          borderRadius: [18, 0],
+
+          // Rounded ends on the progress arc.
+          borderRadius: 18,
           borderSkipped: false,
+
           spacing: 0,
           hoverOffset: 0
         }]
@@ -1125,8 +1127,12 @@ function renderAnalyticsCharts() {
         responsive: true,
         maintainAspectRatio: true,
 
-        cutout: "76%",
+        // A 25% ring thickness relative to the outer radius.
+        cutout: "75%",
+
+        // Begin at 12 o'clock and progress clockwise.
         rotation: -90,
+        circumference: 360,
 
         plugins: {
           legend: {
@@ -1223,7 +1229,6 @@ function createChartExportCanvas(key) {
   const exportCanvas = document.createElement("canvas");
   const context = exportCanvas.getContext("2d");
 
-  // High-resolution export dimensions.
   exportCanvas.width = 960;
   exportCanvas.height = 880;
 
@@ -1231,30 +1236,22 @@ function createChartExportCanvas(key) {
   const centreY = 365;
 
   const radius = 270;
-  const lineWidth = 36;
 
-  // Keep the outside of the chart transparent.
+  // Increased from 36px to 60px for a thicker ring.
+  const lineWidth = 60;
+
   context.clearRect(0, 0, exportCanvas.width, exportCanvas.height);
 
-  // -------------------------------------------------------
-  // WHITE CIRCULAR CHART BACKGROUND
-  // -------------------------------------------------------
-
+  // White circular chart background.
   context.save();
-
   context.fillStyle = "#ffffff";
   context.beginPath();
   context.arc(centreX, centreY, 310, 0, Math.PI * 2);
   context.fill();
-
   context.restore();
 
-  // -------------------------------------------------------
-  // LIGHT GREY BACKGROUND TRACK
-  // -------------------------------------------------------
-
+  // Light grey circular track.
   context.save();
-
   context.lineWidth = lineWidth;
   context.lineCap = "butt";
   context.strokeStyle = "#e8edf3";
@@ -1262,13 +1259,9 @@ function createChartExportCanvas(key) {
   context.beginPath();
   context.arc(centreX, centreY, radius, 0, Math.PI * 2);
   context.stroke();
-
   context.restore();
 
-  // -------------------------------------------------------
-  // COLOURED PROGRESS ARC WITH ROUNDED CAPS
-  // -------------------------------------------------------
-
+  // Coloured progress arc, starting at 12 o'clock.
   if (score !== null && score > 0) {
     context.save();
 
@@ -1287,33 +1280,24 @@ function createChartExportCanvas(key) {
     context.restore();
   }
 
-  // -------------------------------------------------------
-  // WHITE INNER CIRCLE
-  // -------------------------------------------------------
-
+  // Solid white inner circle, directly inside the ring.
   context.save();
-
   context.fillStyle = "#ffffff";
   context.beginPath();
   context.arc(
     centreX,
     centreY,
-    radius - lineWidth / 2 - 3,
+    radius - lineWidth / 2 - 2,
     0,
     Math.PI * 2
   );
   context.fill();
-
   context.restore();
 
-  // -------------------------------------------------------
-  // CENTRE SCORE
-  // -------------------------------------------------------
-
+  // Centre score.
   const numberText = score === null ? "—" : String(score);
 
   context.save();
-
   context.textBaseline = "middle";
   context.textAlign = "left";
 
@@ -1331,7 +1315,6 @@ function createChartExportCanvas(key) {
 
   const percentSpacing = score === null ? 0 : 12;
   const combinedWidth = numberWidth + percentWidth + percentSpacing;
-
   const startX = centreX - combinedWidth / 2;
 
   context.font = "800 180px Inter, Arial, sans-serif";
@@ -1351,14 +1334,10 @@ function createChartExportCanvas(key) {
 
   context.restore();
 
-  // -------------------------------------------------------
-  // CATEGORY GRADIENT PILL
-  // -------------------------------------------------------
-
+  // Category gradient pill.
   const pillText = settings.label.toUpperCase();
 
   context.save();
-
   context.font = "800 34px Inter, Arial, sans-serif";
 
   const pillWidth = Math.max(
@@ -1382,44 +1361,24 @@ function createChartExportCanvas(key) {
 
   context.fillStyle = gradient;
   context.beginPath();
-  context.roundRect(
-    pillX,
-    pillY,
-    pillWidth,
-    pillHeight,
-    40
-  );
+  context.roundRect(pillX, pillY, pillWidth, pillHeight, 40);
   context.fill();
 
   context.fillStyle = "#ffffff";
   context.font = "800 34px Inter, Arial, sans-serif";
   context.textAlign = "center";
   context.textBaseline = "middle";
-  context.fillText(
-    pillText,
-    centreX,
-    pillY + pillHeight / 2
-  );
+  context.fillText(pillText, centreX, pillY + pillHeight / 2);
 
   context.restore();
 
-  // -------------------------------------------------------
-  // AVERAGE SCORE LABEL
-  // -------------------------------------------------------
-
+  // Average score label.
   context.save();
-
   context.fillStyle = "#94a3b8";
   context.font = "500 30px Inter, Arial, sans-serif";
   context.textAlign = "center";
   context.textBaseline = "middle";
-
-  context.fillText(
-    "Average score",
-    centreX,
-    842
-  );
-
+  context.fillText("Average score", centreX, 842);
   context.restore();
 
   return exportCanvas;
