@@ -610,19 +610,51 @@ function scoreToPercentage(score) {
   return ((Number(score) - 1) / 4) * 100;
 }
 
+async function loadSessionAverages() {
+  const { data, error } = await supabaseClient.rpc(
+    "get_session_question_averages",
+    {
+      p_session_id: sessionId
+    }
+  );
+
+  if (error) {
+    console.error("Unable to load session averages:", error);
+    throw new Error("Unable to load session averages.");
+  }
+
+  const averages = {};
+
+  (data || []).forEach((item) => {
+    averages[item.question_id] = {
+      averageScore: Number(item.average_score),
+      participantCount: Number(item.participant_count)
+    };
+  });
+
+  return averages;
+}
+
+
 /* ============================================================
    RESULTS: CHART
    ============================================================ */
 
-function createResultChart(personalScore) {
+
+function createResultChart(personalScore, sessionAverageScore = null) {
   const size = 160;
   const center = size / 2;
-  const radius = 55;
-  const circumference = 2 * Math.PI * radius;
-
-  const percentage = scoreToPercentage(personalScore);
-
   const svgNamespace = "http://www.w3.org/2000/svg";
+
+  const personalPercentage = scoreToPercentage(personalScore);
+
+  const hasSessionAverage =
+    sessionAverageScore !== null &&
+    sessionAverageScore !== undefined;
+
+  const sessionPercentage = hasSessionAverage
+    ? scoreToPercentage(sessionAverageScore)
+    : 0;
 
   const svg = document.createElementNS(svgNamespace, "svg");
 
@@ -632,16 +664,26 @@ function createResultChart(personalScore) {
 
   svg.setAttribute(
     "aria-label",
-    `Your score ${Math.round(percentage)} percent.`
+    `Your score ${personalPercentage} percent. ${
+      hasSessionAverage
+        ? `Session average ${sessionPercentage} percent.`
+        : "Session average unavailable."
+    }`
   );
 
-  function makeCircle(className, value) {
-    const circle = document.createElementNS(svgNamespace, "circle");
+  function makeCircle(className, radius, strokeWidth, value) {
+    const circle = document.createElementNS(
+      svgNamespace,
+      "circle"
+    );
+
+    const circumference = 2 * Math.PI * radius;
 
     circle.setAttribute("cx", center);
     circle.setAttribute("cy", center);
     circle.setAttribute("r", radius);
     circle.setAttribute("class", className);
+    circle.setAttribute("stroke-width", strokeWidth);
     circle.setAttribute("stroke-dasharray", circumference);
 
     circle.setAttribute(
@@ -652,9 +694,25 @@ function createResultChart(personalScore) {
     return circle;
   }
 
-  svg.appendChild(makeCircle("chart-track personal-track", 100));
+  // Outer ring: Session Average
+  svg.appendChild(
+    makeCircle("chart-track average-track", 68, 10, 100)
+  );
 
-  svg.appendChild(makeCircle("chart-value personal-value", percentage));
+  if (hasSessionAverage) {
+    svg.appendChild(
+      makeCircle("chart-value average-value", 68, 10, sessionPercentage)
+    );
+  }
+
+  // Inner ring: Your Result
+  svg.appendChild(
+    makeCircle("chart-track personal-track", 49, 11, 100)
+  );
+
+  svg.appendChild(
+    makeCircle("chart-value personal-value", 49, 11, personalPercentage)
+  );
 
   const wrapper = document.createElement("div");
   wrapper.className = "result-chart-wrapper";
@@ -664,7 +722,7 @@ function createResultChart(personalScore) {
 
   const percentageText = document.createElement("span");
   percentageText.className = "chart-percentage";
-  percentageText.textContent = `${Math.round(percentage)}%`;
+  percentageText.textContent = `${Math.round(personalPercentage)}%`;
 
   const scoreLabel = document.createElement("span");
   scoreLabel.className = "chart-score-label";
@@ -713,6 +771,7 @@ function createLegendRow(label, percentage, dotClass) {
    DISPLAY PERSONAL RESULTS
    ============================================================ */
 
+
 async function renderPersonalResults() {
   const resultsContainer = document.getElementById("results-content");
 
@@ -726,8 +785,11 @@ async function renderPersonalResults() {
   viewResultsButton.textContent = "Loading results...";
 
   try {
-    // Refresh answers from Supabase before displaying results.
+    // Refresh personal answers.
     await loadSavedAnswers();
+
+    // Retrieve averages from all completed participants.
+    const sessionAverages = await loadSessionAverages();
 
     questions.forEach((item) => {
       const personalScore = answers[item.id];
@@ -755,7 +817,16 @@ async function renderPersonalResults() {
 
       const personalPercentage = scoreToPercentage(personalScore);
 
-      const chart = createResultChart(personalScore);
+      const sessionData = sessionAverages[item.id];
+
+      const sessionPercentage = sessionData
+        ? scoreToPercentage(sessionData.averageScore)
+        : null;
+
+      const chart = createResultChart(
+        personalScore,
+        sessionData ? sessionData.averageScore : null
+      );
 
       const legend = document.createElement("div");
       legend.className = "result-legend";
@@ -768,12 +839,21 @@ async function renderPersonalResults() {
         ),
         createLegendRow(
           "Session Average",
-          null,
+          sessionPercentage,
           "session-average-dot"
         )
       );
 
-      card.append(chart, legend);
+      if (!sessionData || sessionData.participantCount < 2) {
+        const note = document.createElement("p");
+        note.className = "results-note";
+        note.textContent =
+          "Session average will be available when at least two participants have completed the survey.";
+
+        card.append(chart, legend, note);
+      } else {
+        card.append(chart, legend);
+      }
 
       resultsContainer.appendChild(card);
     });
