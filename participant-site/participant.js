@@ -618,6 +618,10 @@ async function loadSessionAverages() {
     }
   );
 
+  console.log("[INNOPOLL DEBUG] Session ID:", sessionId);
+  console.log("[INNOPOLL DEBUG] Average RPC data:", data);
+  console.log("[INNOPOLL DEBUG] Average RPC error:", error);
+
   if (error) {
     console.error("Unable to load session averages:", error);
     throw new Error("Unable to load session averages.");
@@ -791,6 +795,11 @@ async function renderPersonalResults() {
     // Retrieve averages from all completed participants.
     const sessionAverages = await loadSessionAverages();
 
+    console.log(
+      "[INNOPOLL DEBUG] Average question IDs:",
+      Object.keys(sessionAverages)
+    );
+
     questions.forEach((item) => {
       const personalScore = answers[item.id];
 
@@ -818,6 +827,9 @@ async function renderPersonalResults() {
       const personalPercentage = scoreToPercentage(personalScore);
 
       const sessionData = sessionAverages[item.id];
+
+      console.log("[INNOPOLL DEBUG] Current question ID:", item.id);
+  console.log("[INNOPOLL DEBUG] Matched average:", sessionData);
 
       const sessionPercentage = sessionData
         ? scoreToPercentage(sessionData.averageScore)
