@@ -818,13 +818,12 @@ function confirmDeleteSession(session) {
 // =========================================================
 
 function buildParticipantUrl(sessionId) {
-  const base = (config.PARTICIPANT_SITE_URL || "").trim();
-
-  const url = base
-    ? new URL(base)
-    : new URL("../participant-site/index.html", window.location.href);
+  const url = new URL(
+    "https://uxc-innopoll.vercel.app/participant-site/"
+  );
 
   url.searchParams.set("session", sessionId);
+
   return url.toString();
 }
 
