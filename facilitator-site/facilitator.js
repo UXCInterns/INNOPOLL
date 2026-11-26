@@ -1081,6 +1081,66 @@ function updateChartCentre(scoreElement, score) {
 // RENDER ANALYTICS CHARTS
 // =========================================================
 
+const readinessRingPlugin = {
+  id: "readinessRing",
+
+  afterDatasetsDraw(chart) {
+    const progress = chart.$readinessProgress ?? 0;
+    const settings = chart.$readinessSettings;
+
+    if (!settings) return;
+
+    const meta = chart.getDatasetMeta(0);
+    const arc = meta?.data?.[0];
+
+    if (!arc) return;
+
+    const { x, y, innerRadius, outerRadius } = arc.getProps(
+      ["x", "y", "innerRadius", "outerRadius"],
+      true
+    );
+
+    const radius = (innerRadius + outerRadius) / 2;
+    const lineWidth = outerRadius - innerRadius;
+
+    const context = chart.ctx;
+
+    context.save();
+
+    // Draw one continuous grey circular track.
+    context.beginPath();
+    context.arc(x, y, radius, 0, Math.PI * 2);
+    context.lineWidth = lineWidth;
+    context.lineCap = "butt";
+    context.strokeStyle = "#e8edf3";
+    context.stroke();
+
+    // Draw the coloured progress arc directly over the track.
+    if (progress > 0) {
+      const startAngle = -Math.PI / 2;
+      const progressAngle = Math.PI * 2 * (progress / 100);
+      const endAngle = startAngle + progressAngle;
+
+      context.beginPath();
+      context.arc(
+        x,
+        y,
+        radius,
+        startAngle,
+        endAngle,
+        false
+      );
+
+      context.lineWidth = lineWidth;
+      context.lineCap = progress >= 100 ? "butt" : "round";
+      context.strokeStyle = settings.colour;
+      context.stroke();
+    }
+
+    context.restore();
+  }
+};
+
 function renderAnalyticsCharts() {
   Object.entries(categorySettings).forEach(([key, settings]) => {
     const summary = getCategorySummary(key);
@@ -1096,41 +1156,26 @@ function renderAnalyticsCharts() {
     }
 
     const progress = score ?? 0;
-    const remaining = 100 - progress;
 
     charts[key] = new Chart(canvas, {
       type: "doughnut",
 
       data: {
-        labels: ["Readiness", "Remaining"],
+        labels: ["Readiness"],
         datasets: [{
-          data: [progress, remaining],
-
-          backgroundColor: [
-            settings.colour,
-            "#e8edf3"
-          ],
-
+          data: [100],
+          backgroundColor: ["transparent"],
           borderWidth: 0,
-          borderColor: "transparent",
-
-          // Rounded ends on the progress arc.
-          borderRadius: 18,
-          borderSkipped: false,
-
-          spacing: 0,
           hoverOffset: 0
         }]
       },
 
+      plugins: [readinessRingPlugin],
+
       options: {
         responsive: true,
         maintainAspectRatio: true,
-
-        // A 25% ring thickness relative to the outer radius.
         cutout: "75%",
-
-        // Begin at 12 o'clock and progress clockwise.
         rotation: -90,
         circumference: 360,
 
@@ -1145,12 +1190,16 @@ function renderAnalyticsCharts() {
         },
 
         animation: {
-          animateRotate: true,
-          duration: 800
+          animateRotate: false,
+          duration: 0
         },
 
         events: []
-      }
+      },
+
+      // Values used by the custom ring-drawing plugin.
+      $readinessProgress: progress,
+      $readinessSettings: settings
     });
   });
 }
@@ -1235,69 +1284,98 @@ function createChartExportCanvas(key) {
   const centreX = 480;
   const centreY = 365;
 
-  const radius = 270;
-
-  // Increased from 36px to 60px for a thicker ring.
+  // Ring geometry.
   const lineWidth = 60;
+  const radius = 270;
+  const outerRadius = radius + lineWidth / 2;
+  const innerRadius = radius - lineWidth / 2;
 
   context.clearRect(0, 0, exportCanvas.width, exportCanvas.height);
 
   // White circular chart background.
+  // Its edge aligns exactly with the outer edge of the ring.
   context.save();
+
   context.fillStyle = "#ffffff";
   context.beginPath();
-  context.arc(centreX, centreY, 310, 0, Math.PI * 2);
+  context.arc(
+    centreX,
+    centreY,
+    outerRadius,
+    0,
+    Math.PI * 2
+  );
   context.fill();
+
   context.restore();
 
-  // Light grey circular track.
+  // Continuous full-circle grey track.
   context.save();
+
+  context.beginPath();
+  context.arc(
+    centreX,
+    centreY,
+    radius,
+    0,
+    Math.PI * 2
+  );
+
   context.lineWidth = lineWidth;
   context.lineCap = "butt";
   context.strokeStyle = "#e8edf3";
-
-  context.beginPath();
-  context.arc(centreX, centreY, radius, 0, Math.PI * 2);
   context.stroke();
+
   context.restore();
 
   // Coloured progress arc, starting at 12 o'clock.
+  // It shares the exact same radius and thickness as the grey track.
   if (score !== null && score > 0) {
     context.save();
-
-    context.lineWidth = lineWidth;
-    context.lineCap = "round";
-    context.strokeStyle = settings.colour;
 
     const startAngle = -Math.PI / 2;
     const progressAngle = Math.PI * 2 * (score / 100);
     const endAngle = startAngle + progressAngle;
 
     context.beginPath();
-    context.arc(centreX, centreY, radius, startAngle, endAngle);
+    context.arc(
+      centreX,
+      centreY,
+      radius,
+      startAngle,
+      endAngle,
+      false
+    );
+
+    context.lineWidth = lineWidth;
+    context.lineCap = score >= 100 ? "butt" : "round";
+    context.strokeStyle = settings.colour;
     context.stroke();
 
     context.restore();
   }
 
-  // Solid white inner circle, directly inside the ring.
+  // Solid white inner circle, flush against the ring's inner edge.
   context.save();
+
   context.fillStyle = "#ffffff";
   context.beginPath();
   context.arc(
     centreX,
     centreY,
-    radius - lineWidth / 2 - 2,
+    innerRadius,
     0,
     Math.PI * 2
   );
   context.fill();
+
   context.restore();
 
   // Centre score.
   const numberText = score === null ? "—" : String(score);
 
   context.save();
+
   context.textBaseline = "middle";
   context.textAlign = "left";
 
@@ -1338,6 +1416,7 @@ function createChartExportCanvas(key) {
   const pillText = settings.label.toUpperCase();
 
   context.save();
+
   context.font = "800 34px Inter, Arial, sans-serif";
 
   const pillWidth = Math.max(
@@ -1368,17 +1447,23 @@ function createChartExportCanvas(key) {
   context.font = "800 34px Inter, Arial, sans-serif";
   context.textAlign = "center";
   context.textBaseline = "middle";
-  context.fillText(pillText, centreX, pillY + pillHeight / 2);
+  context.fillText(
+    pillText,
+    centreX,
+    pillY + pillHeight / 2
+  );
 
   context.restore();
 
   // Average score label.
   context.save();
+
   context.fillStyle = "#94a3b8";
   context.font = "500 30px Inter, Arial, sans-serif";
   context.textAlign = "center";
   context.textBaseline = "middle";
   context.fillText("Average score", centreX, 842);
+
   context.restore();
 
   return exportCanvas;
