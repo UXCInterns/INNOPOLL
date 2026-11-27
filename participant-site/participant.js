@@ -772,6 +772,7 @@ function createLegendRow(label, percentage, dotClass) {
    ============================================================ */
 
 
+
 async function renderPersonalResults() {
   const resultsContainer = document.getElementById("results-content");
 
@@ -819,13 +820,18 @@ async function renderPersonalResults() {
 
       const sessionData = sessionAverages[item.id];
 
-      const sessionPercentage = sessionData
-        ? scoreToPercentage(sessionData.averageScore)
-        : null;
+      // If fewer than two participants have completed the survey,
+      // use this participant's own score as the session average.
+      const sessionAverageScore =
+        sessionData && sessionData.participantCount >= 2
+          ? sessionData.averageScore
+          : personalScore;
+
+      const sessionPercentage = scoreToPercentage(sessionAverageScore);
 
       const chart = createResultChart(
         personalScore,
-        sessionData ? sessionData.averageScore : null
+        sessionAverageScore
       );
 
       const legend = document.createElement("div");
@@ -844,16 +850,8 @@ async function renderPersonalResults() {
         )
       );
 
-      if (!sessionData || sessionData.participantCount < 2) {
-        const note = document.createElement("p");
-        note.className = "results-note";
-        note.textContent =
-          "Session average will be available when at least two participants have completed the survey.";
-
-        card.append(chart, legend, note);
-      } else {
-        card.append(chart, legend);
-      }
+      // Always display both the personal result and session average.
+      card.append(chart, legend);
 
       resultsContainer.appendChild(card);
     });
