@@ -29,7 +29,7 @@ const pages = ["sessions-page", "editor-page", "qr-page", "analytics-page", "par
 const categorySettings = {
   culture: {
     label: "Culture",
-    colour: "#f59e0b",
+    colour: "#ea580c",
     gradientStart: "#f59e0b",
     gradientEnd: "#ea7b16",
     chart: "culture-chart",
@@ -37,7 +37,7 @@ const categorySettings = {
   },
   practices: {
     label: "Practices",
-    colour: "#4387f5",
+    colour: "#2563eb",
     gradientStart: "#4387f5",
     gradientEnd: "#2864d9",
     chart: "practices-chart",
@@ -45,14 +45,13 @@ const categorySettings = {
   },
   leadership: {
     label: "Leadership",
-    colour: "#24b47e",
+    colour: "#059669",
     gradientStart: "#24b47e",
     gradientEnd: "#159b69",
     chart: "leadership-chart",
     score: "leadership-score"
   }
 };
-
 
 const DEFAULT_QUESTIONS = [
   {
@@ -77,7 +76,6 @@ const DEFAULT_QUESTIONS = [
     statements: []
   }
 ];
-
 
 // =========================================================
 // GENERAL HELPERS
@@ -192,14 +190,6 @@ function getInitials(name) {
     .toUpperCase() || "F";
 }
 
-function profileAvatarMarkup(user, className = "creator-avatar") {
-  const name = getProfileName(user);
-  const image = getProfileImage(user);
-  return `<span class="${className}">${image
-    ? `<img src="${escapeHTML(image)}" alt="${escapeHTML(name)}" referrerpolicy="no-referrer">`
-    : escapeHTML(getInitials(name))}</span>`;
-}
-
 function showPage(pageId, breadcrumb) {
   pages.forEach((id) => $(id).classList.add("hidden"));
   $(pageId).classList.remove("hidden");
@@ -310,12 +300,13 @@ async function loadSessions() {
 
   const { data, error } = await db.from("sessions")
     .select("*")
-    .eq("created_by", user.id)
     .order("created_at", { ascending: false });
 
   if (error) {
     console.error(error);
     setMessage("sessions-message", "Unable to load sessions. Please refresh.");
+    $("sessions-table-body").innerHTML =
+      `<tr><td colspan="7" class="empty-table">Unable to load sessions.</td></tr>`;
     return;
   }
 
@@ -368,6 +359,8 @@ async function renderSessions() {
         participantCounts[participant.session_id] =
           (participantCounts[participant.session_id] || 0) + 1;
       });
+    } else {
+      console.error("Unable to load participant counts:", error);
     }
   }
 
@@ -388,13 +381,12 @@ async function renderSessions() {
     return;
   }
 
-  const creatorName = getProfileName(currentUser);
-  const creatorImage = getProfileImage(currentUser);
-
+  // FIX: Define session-specific values inside the map callback.
   $("sessions-table-body").innerHTML = filtered.map((session) => {
     const status = getSessionStatus(session);
     const count = participantCounts[session.id] || 0;
     const createdDate = session.created_at ? formatDateTime(session.created_at) : "—";
+    const creatorName = session.created_by_name || "Unknown";
 
     return `
       <tr>
@@ -405,11 +397,7 @@ async function renderSessions() {
         <td><span class="status-pill ${status === "ongoing" ? "active" : ""}">${status === "ongoing" ? "Ongoing" : "Ended"}</span></td>
         <td>
           <span class="creator-cell">
-            <span class="creator-avatar">
-              ${creatorImage
-                ? `<img src="${escapeHTML(creatorImage)}" alt="${escapeHTML(creatorName)}" referrerpolicy="no-referrer">`
-                : escapeHTML(getInitials(creatorName))}
-            </span>
+            <span class="creator-avatar">${escapeHTML(getInitials(creatorName))}</span>
             <span class="creator-name">${escapeHTML(creatorName)}</span>
           </span>
         </td>
@@ -503,9 +491,7 @@ function addQuestionEditor(question = {}) {
 
   statements.forEach((statement) => addStatementEditor(statementList, statement));
 
-  if (!statements.length) {
-    addStatementEditor(statementList, "");
-  }
+  if (!statements.length) addStatementEditor(statementList, "");
 
   card.querySelector(".add-statement-button").addEventListener("click", () => {
     addStatementEditor(statementList, "");
@@ -675,6 +661,7 @@ $("session-form").addEventListener("submit", async (event) => {
       end_date: endDate,
       room_code: generateRoomCode(),
       created_by: user.id,
+      created_by_name: getProfileName(user),
       is_active: true
     }).select().single();
 
@@ -719,21 +706,14 @@ $("session-form").addEventListener("submit", async (event) => {
 
     savedSession = data;
 
-    const existingQuestions = await db.from("session_questions")
-      .select("id")
-      .eq("session_id", editingSessionId);
-
-    if (existingQuestions.error) {
-      setMessage("editor-error", "Unable to verify existing questions.");
-      restoreButton();
-      return;
-    }
-
+    // The previous question-ID lookup was unnecessary:
+    // its results were never used. Delete errors are handled directly.
     const { error: deleteError } = await db.from("session_questions")
       .delete()
       .eq("session_id", editingSessionId);
 
     if (deleteError) {
+      console.error(deleteError);
       setMessage("editor-error", "Unable to update the questions.");
       restoreButton();
       return;
@@ -758,9 +738,7 @@ $("session-form").addEventListener("submit", async (event) => {
   restoreButton();
   await loadSessions();
 
-  if (savedSession) {
-    await openAnalytics(savedSession);
-  }
+  if (savedSession) await openAnalytics(savedSession);
 });
 
 // =========================================================
@@ -820,12 +798,8 @@ function confirmDeleteSession(session) {
 // =========================================================
 
 function buildParticipantUrl(sessionId) {
-  const url = new URL(
-    "https://uxc-innopoll.vercel.app/participant-site/"
-  );
-
+  const url = new URL("https://uxc-innopoll.vercel.app/participant-site/");
   url.searchParams.set("session", sessionId);
-
   return url.toString();
 }
 
@@ -924,7 +898,6 @@ function downloadDataUrl(url, filename) {
   const link = document.createElement("a");
   link.href = url;
   link.download = filename;
-
   document.body.appendChild(link);
   link.click();
   link.remove();
@@ -994,7 +967,6 @@ async function loadAnalytics() {
 
   if (!completedParticipants.length || !currentQuestions.length) {
     currentAnswers = [];
-
     renderAnalyticsCharts();
     renderResponseDistribution();
 
@@ -1002,7 +974,6 @@ async function loadAnalytics() {
       "analytics-message",
       "No completed surveys yet. Results will appear when participants submit their surveys."
     );
-
     return;
   }
 
@@ -1049,9 +1020,7 @@ function getCategorySummary(categoryKey) {
     });
   });
 
-  if (!values.length) {
-    return { score: null, count: 0 };
-  }
+  if (!values.length) return { score: null, count: 0 };
 
   const mean = values.reduce((sum, value) => sum + value, 0) / values.length;
 
@@ -1080,8 +1049,57 @@ function updateChartCentre(scoreElement, score) {
 }
 
 // =========================================================
-// RENDER DOUGHNUT CHARTS
+// RENDER ANALYTICS CHARTS
 // =========================================================
+
+const readinessRingPlugin = {
+  id: "readinessRing",
+
+  afterDraw(chart) {
+    const meta = chart.getDatasetMeta(0);
+    const arc = meta?.data?.[0];
+    if (!arc) return;
+
+    const { x, y, outerRadius, innerRadius } =
+      arc.getProps(["x", "y", "outerRadius", "innerRadius"], true);
+
+    const ringSettings = chart.options.plugins.readinessRing;
+    if (!ringSettings) return;
+
+    const ctx = chart.ctx;
+    const progress = Math.max(0, Math.min(100, ringSettings.progress ?? 0));
+    const lineWidth = outerRadius - innerRadius;
+    const radius = (outerRadius + innerRadius) / 2;
+
+    ctx.save();
+
+    ctx.beginPath();
+    ctx.arc(x, y, outerRadius, 0, Math.PI * 2);
+    ctx.fillStyle = "#ffffff";
+    ctx.fill();
+
+    ctx.beginPath();
+    ctx.arc(x, y, radius, 0, Math.PI * 2);
+    ctx.lineWidth = lineWidth;
+    ctx.lineCap = "butt";
+    ctx.strokeStyle = "#e8edf3";
+    ctx.stroke();
+
+    if (progress > 0) {
+      const startAngle = -Math.PI / 2;
+      const endAngle = startAngle + (Math.PI * 2 * progress) / 100;
+
+      ctx.beginPath();
+      ctx.arc(x, y, radius, startAngle, endAngle);
+      ctx.lineWidth = lineWidth;
+      ctx.lineCap = progress >= 100 ? "butt" : "round";
+      ctx.strokeStyle = ringSettings.colour;
+      ctx.stroke();
+    }
+
+    ctx.restore();
+  }
+};
 
 function renderAnalyticsCharts() {
   Object.entries(categorySettings).forEach(([key, settings]) => {
@@ -1091,58 +1109,40 @@ function renderAnalyticsCharts() {
     updateChartCentre($(settings.score), score);
 
     const canvas = $(settings.chart);
+    if (!canvas) return;
 
-    if (charts[key]) {
-      charts[key].destroy();
-    }
-
-    const progress = score ?? 0;
-    const remaining = 100 - progress;
+    if (charts[key]) charts[key].destroy();
 
     charts[key] = new Chart(canvas, {
       type: "doughnut",
-
       data: {
-        labels: ["Readiness", "Remaining"],
+        labels: ["Readiness"],
         datasets: [{
-          data: [progress, remaining],
-
-          backgroundColor: [
-            settings.colour,
-            "#e8edf3"
-          ],
-
+          data: [100],
+          backgroundColor: ["transparent"],
           borderWidth: 0,
-          borderColor: "transparent",
-          borderRadius: [18, 0],
-          borderSkipped: false,
-          spacing: 0,
           hoverOffset: 0
         }]
       },
-
+      plugins: [readinessRingPlugin],
       options: {
         responsive: true,
         maintainAspectRatio: true,
-
-        cutout: "76%",
+        cutout: "80%",
         rotation: -90,
-
+        circumference: 360,
         plugins: {
-          legend: {
-            display: false
-          },
-
-          tooltip: {
-            enabled: false
+          legend: { display: false },
+          tooltip: { enabled: false },
+          readinessRing: {
+            progress: score ?? 0,
+            colour: settings.colour
           }
         },
-
         animation: {
-          animateRotate: true,
-          duration: 800
+          animateRotate: false,
+          duration: 0
         },
-
         events: []
       }
     });
@@ -1170,24 +1170,20 @@ function renderResponseDistribution() {
     );
 
     const total = answers.length;
+    const labels = [
+      "Strongly disagree",
+      "Disagree",
+      "Neutral",
+      "Agree",
+      "Strongly agree"
+    ];
 
     return `
       <article class="distribution-item">
         <h4>${escapeHTML(question.title || question.category)}: ${escapeHTML(question.question_text)}</h4>
-
         <div class="distribution-bars">
           ${distribution.map((count, index) => {
-            const percentage = total
-              ? Math.round((count / total) * 100)
-              : 0;
-
-            const labels = [
-              "Strongly disagree",
-              "Disagree",
-              "Neutral",
-              "Agree",
-              "Strongly agree"
-            ];
+            const percentage = total ? Math.round((count / total) * 100) : 0;
 
             return `
               <div class="distribution-row">
@@ -1199,7 +1195,6 @@ function renderResponseDistribution() {
               </div>`;
           }).join("")}
         </div>
-
         <p class="muted small-text">${total} response(s)</p>
       </article>`;
   }).join("");
@@ -1215,113 +1210,71 @@ function createChartExportCanvas(key) {
 
   const scoreText = $(settings.score)?.textContent || "—";
   const scoreMatch = scoreText.match(/\d+/);
-
-  const score = scoreMatch
-    ? Math.max(0, Math.min(100, Number(scoreMatch[0])))
-    : null;
+  const score = scoreMatch ? Math.max(0, Math.min(100, Number(scoreMatch[0]))) : null;
 
   const exportCanvas = document.createElement("canvas");
   const context = exportCanvas.getContext("2d");
 
-  // High-resolution export dimensions.
   exportCanvas.width = 960;
   exportCanvas.height = 880;
 
   const centreX = 480;
   const centreY = 365;
-
+  const lineWidth = 60;
   const radius = 270;
-  const lineWidth = 36;
+  const outerRadius = radius + lineWidth / 2;
+  const innerRadius = radius - lineWidth / 2;
 
-  // Keep the outside of the chart transparent.
   context.clearRect(0, 0, exportCanvas.width, exportCanvas.height);
 
-  // -------------------------------------------------------
-  // WHITE CIRCULAR CHART BACKGROUND
-  // -------------------------------------------------------
-
   context.save();
-
   context.fillStyle = "#ffffff";
   context.beginPath();
-  context.arc(centreX, centreY, 310, 0, Math.PI * 2);
+  context.arc(centreX, centreY, outerRadius, 0, Math.PI * 2);
   context.fill();
-
   context.restore();
 
-  // -------------------------------------------------------
-  // LIGHT GREY BACKGROUND TRACK
-  // -------------------------------------------------------
-
   context.save();
-
+  context.beginPath();
+  context.arc(centreX, centreY, radius, 0, Math.PI * 2);
   context.lineWidth = lineWidth;
   context.lineCap = "butt";
   context.strokeStyle = "#e8edf3";
-
-  context.beginPath();
-  context.arc(centreX, centreY, radius, 0, Math.PI * 2);
   context.stroke();
-
   context.restore();
-
-  // -------------------------------------------------------
-  // COLOURED PROGRESS ARC WITH ROUNDED CAPS
-  // -------------------------------------------------------
 
   if (score !== null && score > 0) {
     context.save();
 
-    context.lineWidth = lineWidth;
-    context.lineCap = "round";
-    context.strokeStyle = settings.colour;
-
     const startAngle = -Math.PI / 2;
-    const progressAngle = Math.PI * 2 * (score / 100);
-    const endAngle = startAngle + progressAngle;
+    const endAngle = startAngle + Math.PI * 2 * (score / 100);
 
     context.beginPath();
-    context.arc(centreX, centreY, radius, startAngle, endAngle);
+    context.arc(centreX, centreY, radius, startAngle, endAngle, false);
+    context.lineWidth = lineWidth;
+    context.lineCap = score >= 100 ? "butt" : "round";
+    context.strokeStyle = settings.colour;
     context.stroke();
 
     context.restore();
   }
 
-  // -------------------------------------------------------
-  // WHITE INNER CIRCLE
-  // -------------------------------------------------------
-
   context.save();
-
   context.fillStyle = "#ffffff";
   context.beginPath();
-  context.arc(
-    centreX,
-    centreY,
-    radius - lineWidth / 2 - 3,
-    0,
-    Math.PI * 2
-  );
+  context.arc(centreX, centreY, innerRadius, 0, Math.PI * 2);
   context.fill();
-
   context.restore();
-
-  // -------------------------------------------------------
-  // CENTRE SCORE
-  // -------------------------------------------------------
 
   const numberText = score === null ? "—" : String(score);
 
   context.save();
-
   context.textBaseline = "middle";
   context.textAlign = "left";
-
   context.fillStyle = settings.colour;
   context.font = "800 180px Inter, Arial, sans-serif";
 
   const numberWidth = context.measureText(numberText).width;
-
   let percentWidth = 0;
 
   if (score !== null) {
@@ -1331,7 +1284,6 @@ function createChartExportCanvas(key) {
 
   const percentSpacing = score === null ? 0 : 12;
   const combinedWidth = numberWidth + percentWidth + percentSpacing;
-
   const startX = centreX - combinedWidth / 2;
 
   context.font = "800 180px Inter, Arial, sans-serif";
@@ -1341,85 +1293,44 @@ function createChartExportCanvas(key) {
   if (score !== null) {
     context.font = "500 65px Inter, Arial, sans-serif";
     context.fillStyle = "#8b929d";
-
-    context.fillText(
-      "%",
-      startX + numberWidth + percentSpacing,
-      centreY + 28
-    );
+    context.fillText("%", startX + numberWidth + percentSpacing, centreY + 28);
   }
 
   context.restore();
 
-  // -------------------------------------------------------
-  // CATEGORY GRADIENT PILL
-  // -------------------------------------------------------
-
   const pillText = settings.label.toUpperCase();
 
   context.save();
-
   context.font = "800 34px Inter, Arial, sans-serif";
 
-  const pillWidth = Math.max(
-    250,
-    context.measureText(pillText).width + 90
-  );
-
+  const pillWidth = Math.max(250, context.measureText(pillText).width + 90);
   const pillHeight = 74;
   const pillX = centreX - pillWidth / 2;
   const pillY = 735;
 
-  const gradient = context.createLinearGradient(
-    pillX,
-    pillY,
-    pillX + pillWidth,
-    pillY
-  );
-
+  const gradient = context.createLinearGradient(pillX, pillY, pillX + pillWidth, pillY);
   gradient.addColorStop(0, settings.gradientStart);
   gradient.addColorStop(1, settings.gradientEnd);
 
   context.fillStyle = gradient;
   context.beginPath();
-  context.roundRect(
-    pillX,
-    pillY,
-    pillWidth,
-    pillHeight,
-    40
-  );
+  context.roundRect(pillX, pillY, pillWidth, pillHeight, 40);
   context.fill();
 
   context.fillStyle = "#ffffff";
   context.font = "800 34px Inter, Arial, sans-serif";
   context.textAlign = "center";
   context.textBaseline = "middle";
-  context.fillText(
-    pillText,
-    centreX,
-    pillY + pillHeight / 2
-  );
+  context.fillText(pillText, centreX, pillY + pillHeight / 2);
 
   context.restore();
 
-  // -------------------------------------------------------
-  // AVERAGE SCORE LABEL
-  // -------------------------------------------------------
-
   context.save();
-
   context.fillStyle = "#94a3b8";
   context.font = "500 30px Inter, Arial, sans-serif";
   context.textAlign = "center";
   context.textBaseline = "middle";
-
-  context.fillText(
-    "Average score",
-    centreX,
-    842
-  );
-
+  context.fillText("Average score", centreX, 842);
   context.restore();
 
   return exportCanvas;
@@ -1431,14 +1342,10 @@ function createChartExportCanvas(key) {
 
 async function copyChart(key) {
   const canvas = createChartExportCanvas(key);
-
   if (!canvas) return;
 
   if (!navigator.clipboard || !window.ClipboardItem) {
-    setMessage(
-      "analytics-message",
-      "Your browser does not support copying chart images. Please use Export as PNG instead."
-    );
+    setMessage("analytics-message", "Your browser does not support copying chart images. Please use Export as PNG instead.");
     return;
   }
 
@@ -1447,27 +1354,16 @@ async function copyChart(key) {
       canvas.toBlob(resolve, "image/png");
     });
 
-    if (!blob) {
-      throw new Error("Unable to create chart image.");
-    }
+    if (!blob) throw new Error("Unable to create chart image.");
 
     await navigator.clipboard.write([
-      new ClipboardItem({
-        "image/png": blob
-      })
+      new ClipboardItem({ "image/png": blob })
     ]);
 
-    setMessage(
-      "analytics-message",
-      `${categorySettings[key].label} chart copied as an image.`
-    );
+    setMessage("analytics-message", `${categorySettings[key].label} chart copied as an image.`);
   } catch (error) {
     console.error("Unable to copy chart image:", error);
-
-    setMessage(
-      "analytics-message",
-      "Unable to copy the chart image. Please use Export as PNG instead."
-    );
+    setMessage("analytics-message", "Unable to copy the chart image. Please use Export as PNG instead.");
   }
 }
 
@@ -1483,13 +1379,9 @@ document.querySelectorAll(".copy-chart").forEach((button) => {
 
 async function exportChart(key) {
   const canvas = createChartExportCanvas(key);
-
   if (!canvas) return;
 
-  downloadDataUrl(
-    canvas.toDataURL("image/png"),
-    `innopoll-${key}-readiness.png`
-  );
+  downloadDataUrl(canvas.toDataURL("image/png"), `innopoll-${key}-readiness.png`);
 }
 
 document.querySelectorAll(".export-chart").forEach((button) => {
@@ -1529,22 +1421,17 @@ async function openParticipants(session) {
 $("participants-back-button").addEventListener("click", showDashboard);
 
 $("view-participants-button").addEventListener("click", async () => {
-  if (currentSession) {
-    await openParticipants(currentSession);
-  }
+  if (currentSession) await openParticipants(currentSession);
 });
 
 $("analytics-qr-button").addEventListener("click", () => {
-  if (currentSession) {
-    openQrPage(currentSession);
-  }
+  if (currentSession) openQrPage(currentSession);
 });
 
 async function loadParticipants() {
   if (!currentSession) return;
 
   const sessionId = currentSession.id;
-
   setMessage("participants-message", "Loading participants...");
 
   const { data, error } = await db.from("participants")
@@ -1631,10 +1518,7 @@ function renderParticipants(participants, answerCounts = {}) {
       </tr>`;
   }).join("");
 
-  setMessage(
-    "participants-message",
-    `${filtered.length} participant record(s) found.`
-  );
+  setMessage("participants-message", `${filtered.length} participant record(s) found.`);
 }
 
 $("refresh-participants-button").addEventListener("click", loadParticipants);
@@ -1667,7 +1551,6 @@ async function toggleSessionStatus(session) {
   }
 
   currentSession = data;
-
   await loadSessions();
 
   if ($("analytics-page") && !$("analytics-page").classList.contains("hidden")) {

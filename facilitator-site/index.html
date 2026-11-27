@@ -130,8 +130,8 @@
         <section class="content-panel">
           <div class="panel-heading">
             <div>
-              <h2>Your Sessions</h2>
-              <p class="muted">View and manage your created sessions.</p>
+              <h2>Sessions</h2>
+              <p class="muted">View and manage created sessions.</p>
             </div>
             <button id="refresh-button" class="icon-button" type="button"
               title="Refresh sessions">↻</button>
@@ -139,7 +139,12 @@
 
           <div class="table-toolbar">
             <div class="search-box">
-              <span>⌕</span>
+              <span class="search-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24">
+                  <circle cx="10.8" cy="10.8" r="6.8"></circle>
+                  <path d="m16 16 4.2 4.2"></path>
+                </svg>
+              </span>
               <input id="session-search" type="search" placeholder="Search sessions..." />
             </div>
             <select id="session-filter" class="filter-select">
@@ -283,7 +288,6 @@
         <div class="analytics-banner">
           <p>LIVE RESULTS</p>
           <h2>INNOVATION READINESS</h2>
-          <span>A snapshot of innovation readiness across this session</span>
         </div>
 
         <div class="analytics-overview">
